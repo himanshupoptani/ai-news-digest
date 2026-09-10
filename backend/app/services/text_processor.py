@@ -176,3 +176,4 @@ class TextProcessor:
         return unique_articles, duplicate_clusters
 
 text_processor = TextProcessor()
+

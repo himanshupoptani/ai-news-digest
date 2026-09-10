@@ -57,3 +57,4 @@ def test_deduplicate_articles_clustering():
     assert len(duplicates) == 1
     assert duplicates[0]["primary_source"] == "Reuters"
     assert duplicates[0]["duplicate_source"] == "Bloomberg"
+
