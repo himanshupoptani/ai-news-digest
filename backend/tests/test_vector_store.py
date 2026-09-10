@@ -73,3 +73,4 @@ def test_vector_search_threshold_filtering(store):
     # Totally unrelated query should return empty list due to min_score threshold
     results_unrelated = store.similarity_search("ancient Egyptian pyramids pharaohs", min_score=0.20)
     assert len(results_unrelated) == 0
+

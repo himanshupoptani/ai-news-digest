@@ -3,6 +3,7 @@ from backend.app.services.text_processor import TextProcessor, text_processor
 from backend.app.services.state_machine import ArticleState, ArticleStateMachine, state_machine
 from backend.app.services.rational_agent import RationalNewsAgent, rational_agent, ScoreBreakdown
 from backend.app.services.vector_store import DocumentChunk, SearchResult, InMemoryVectorStore, vector_store
+from backend.app.services.rag_engine import GroundedCitation, GroundedDigest, RAGEngine, rag_engine
 
 __all__ = [
     "NewsFetcher",
@@ -19,4 +20,8 @@ __all__ = [
     "SearchResult",
     "InMemoryVectorStore",
     "vector_store",
+    "GroundedCitation",
+    "GroundedDigest",
+    "RAGEngine",
+    "rag_engine",
 ]

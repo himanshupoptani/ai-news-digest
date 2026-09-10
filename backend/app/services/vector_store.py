@@ -147,3 +147,4 @@ class InMemoryVectorStore:
 
 # Singleton instance
 vector_store = InMemoryVectorStore()
+
