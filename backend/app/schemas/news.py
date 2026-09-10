@@ -25,3 +25,4 @@ class NewsSearchResponse(BaseModel):
     mode_used: str  # 'live-api', 'live-rss', or 'offline-demo'
     total_found: int
     articles: List[RawArticle]
+

@@ -31,3 +31,4 @@ def test_fetch_offline_fallback_for_unknown_query(fetcher):
     
     assert isinstance(response, NewsSearchResponse)
     assert len(response.articles) > 0  # Graceful fallback ensures non-empty articles for display
+

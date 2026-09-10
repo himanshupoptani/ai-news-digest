@@ -203,3 +203,4 @@ class NewsFetcher:
 
 # Singleton instance for easy import across services
 news_fetcher = NewsFetcher()
+
