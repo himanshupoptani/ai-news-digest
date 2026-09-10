@@ -87,3 +87,4 @@ def test_rank_and_select_multi_objective():
     # Both top articles should be the fresh, relevant news stories
     selected_urls = [a.url for a, b in ranked]
     assert "https://history.com/old-gov" not in selected_urls
+

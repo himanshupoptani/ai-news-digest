@@ -171,3 +171,4 @@ class RationalNewsAgent:
 
 # Singleton instance
 rational_agent = RationalNewsAgent()
+
