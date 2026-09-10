@@ -54,3 +54,4 @@ def test_full_hallucination_inspection_with_safe_refusal():
     assert report.evidence_strength == "INSUFFICIENT"
     assert "could not find sufficient evidence" in sanitized_text.lower()
     assert report.mitigation_applied is True
+

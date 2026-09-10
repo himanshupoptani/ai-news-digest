@@ -5,6 +5,7 @@ from backend.app.services.rational_agent import RationalNewsAgent, rational_agen
 from backend.app.services.vector_store import DocumentChunk, SearchResult, InMemoryVectorStore, vector_store
 from backend.app.services.rag_engine import GroundedCitation, GroundedDigest, RAGEngine, rag_engine
 from backend.app.services.hallucination_shield import HallucinationAuditReport, HallucinationShield, hallucination_shield
+from backend.app.services.bias_mitigator import BiasAnalysisReport, BiasMitigator, bias_mitigator
 
 __all__ = [
     "NewsFetcher",
@@ -28,4 +29,7 @@ __all__ = [
     "HallucinationAuditReport",
     "HallucinationShield",
     "hallucination_shield",
+    "BiasAnalysisReport",
+    "BiasMitigator",
+    "bias_mitigator",
 ]

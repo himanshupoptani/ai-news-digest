@@ -165,3 +165,4 @@ class HallucinationShield:
 
 # Singleton instance
 hallucination_shield = HallucinationShield()
+
