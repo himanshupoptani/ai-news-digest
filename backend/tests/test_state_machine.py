@@ -102,3 +102,4 @@ def test_duplicate_archival_transition(db):
     )
     assert article.current_state == ArticleState.DUPLICATE_ARCHIVED.value
     assert log.to_state == ArticleState.DUPLICATE_ARCHIVED.value
+

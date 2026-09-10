@@ -120,3 +120,4 @@ class ArticleStateMachine:
 
 # Singleton instance
 state_machine = ArticleStateMachine()
+
