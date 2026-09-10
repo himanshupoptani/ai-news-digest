@@ -73,3 +73,4 @@ class Article(Base):
 
     def __repr__(self):
         return f"<Article(id={self.id}, title='{self.title[:30]}...', state='{self.current_state}')>"
+

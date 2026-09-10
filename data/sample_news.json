@@ -1,0 +1,74 @@
+[
+  {
+    "title": "OpenAI and Anthropic Sign Safety Agreements with US AI Safety Institute",
+    "url": "https://reuters.com/technology/openai-anthropic-us-safety-pact-2026",
+    "source_name": "Reuters",
+    "author": "David Shepard",
+    "published_at": "2026-09-09T14:30:00Z",
+    "content": "Leading artificial intelligence developers OpenAI and Anthropic have signed formal agreements with the U.S. Artificial Intelligence Safety Institute to collaborate on research, testing, and evaluation of upcoming frontier models. Under the agreement, the institute will gain access to major new models prior to and following their public release. Industry experts noted that while the pact is voluntary, it establishes a formal precedent for pre-deployment safety evaluation across generative AI systems.",
+    "category": "Artificial Intelligence"
+  },
+  {
+    "title": "US Government Formalizes Pre-Release AI Model Testing with Frontier Labs",
+    "url": "https://bloomberg.com/news/articles/2026-09-09/us-formalizes-ai-testing",
+    "source_name": "Bloomberg",
+    "author": "Rachel Vance",
+    "published_at": "2026-09-09T15:15:00Z",
+    "content": "The National Institute of Standards and Technology announced landmark testing pacts with OpenAI and Anthropic. The frameworks allow government researchers to assess national security risks, cybersecurity vulnerabilities, and catastrophic threat vectors before commercial deployment. Tech leaders praised the collaborative approach, though civil liberty advocates argued that voluntary agreements lack enforceable penalties if safety benchmarks are breached.",
+    "category": "Artificial Intelligence"
+  },
+  {
+    "title": "AI Safety Institute Secures Testing Access to Next-Gen Models",
+    "url": "https://techcrunch.com/2026/09/09/ai-safety-institute-access-frontier-models",
+    "source_name": "TechCrunch",
+    "author": "Alex Wilhelm",
+    "published_at": "2026-09-09T16:00:00Z",
+    "content": "In a major step for AI governance, the US AI Safety Institute will now review frontier models from top AI labs prior to release. The agreement focuses on empirical red-teaming, evaluating model autonomy, and preventing malicious misuse. The initiative comes as global regulators debate whether frontier LLMs require mandatory licensing or lightweight self-governance frameworks.",
+    "category": "Artificial Intelligence"
+  },
+  {
+    "title": "Nvidia Reports Record Quarter as Data Center AI Chip Demand Surges",
+    "url": "https://reuters.com/technology/nvidia-q2-earnings-datacenter-beat-2026",
+    "source_name": "Reuters",
+    "author": "Stephen Nellis",
+    "published_at": "2026-09-08T20:05:00Z",
+    "content": "Nvidia posted quarterly revenue of $30.04 billion, beating Wall Street expectations driven by continuous demand for its Hopper and upcoming Blackwell architecture graphics processing units. Data center revenue jumped 154% year over year to $26.3 billion. Chief Executive Jensen Huang reaffirmed that Blackwell chip production is ramping up aggressively for deliveries later this year.",
+    "category": "Technology"
+  },
+  {
+    "title": "Nvidia Revenue Hits Record $30B But Margins Face Blackwell Ramp Pressure",
+    "url": "https://bloomberg.com/news/articles/2026-09-08/nvidia-record-revenue-margin-pressure",
+    "source_name": "Bloomberg",
+    "author": "Ian King",
+    "published_at": "2026-09-08T20:30:00Z",
+    "content": "Nvidia demonstrated strong AI infrastructure spending, reporting revenue of $30.04 billion against estimates of $28.7 billion. However, gross margins narrowed slightly to 75.1% from 78.4% in the previous quarter, attributed to early packaging costs for its complex Blackwell semiconductor platform. Analysts expressed confidence that high-performance computing demand remains durable.",
+    "category": "Technology"
+  },
+  {
+    "title": "Global Semiconductor Alliance Expands 2nm Foundry Capacity in Europe and Japan",
+    "url": "https://apnews.com/article/semiconductors-chips-europe-japan-tsmc-2026",
+    "source_name": "Associated Press",
+    "author": "Yuri Kageyama",
+    "published_at": "2026-09-07T11:00:00Z",
+    "content": "Leading chip foundries including TSMC and Rapidus announced accelerated construction timelines for next-generation 2-nanometer fabrication plants across Dresden, Germany and Hokkaido, Japan. The expansions aim to diversify advanced microelectronics manufacturing beyond East Asia amid geopolitical resilience strategies backed by billions in governmental subsidies.",
+    "category": "Technology"
+  },
+  {
+    "title": "Federal Reserve Holds Interest Rates Steady, Hints at Inflation Moderation",
+    "url": "https://reuters.com/markets/us/fed-holds-rates-steady-inflation-2026",
+    "source_name": "Reuters",
+    "author": "Howard Schneider",
+    "published_at": "2026-09-06T18:00:00Z",
+    "content": "The Federal Reserve kept its benchmark overnight interest rate in the 5.25%-5.50% range, indicating that while inflation continues to decelerate toward the central bank's 2% objective, policymakers require additional evidence before easing monetary policy. Federal Reserve Chair Jerome Powell highlighted steady labor market conditions as justification for maintaining patience.",
+    "category": "Economy"
+  },
+  {
+    "title": "NASA Artemis Mission Clears Critical Space Launch System Fueling Test",
+    "url": "https://apnews.com/article/nasa-artemis-moon-rocket-sls-test-2026",
+    "source_name": "Associated Press",
+    "author": "Marcia Dunn",
+    "published_at": "2026-09-05T09:45:00Z",
+    "content": "NASA engineers successfully completed a full cryogenic wet dress rehearsal for the Space Launch System rocket at Kennedy Space Center, loading over 700,000 gallons of liquid hydrogen and oxygen without liquid interface leaks. The milestone clears the path for the four-astronaut lunar orbit mission scheduled for the coming launch window.",
+    "category": "Science"
+  }
+]

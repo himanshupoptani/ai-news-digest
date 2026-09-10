@@ -18,3 +18,4 @@ class ArticleStateLog(Base):
 
     def __repr__(self):
         return f"<StateLog(article_id={self.article_id}, {self.previous_state} -> {self.to_state})>"
+

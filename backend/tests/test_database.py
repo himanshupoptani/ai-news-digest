@@ -61,3 +61,4 @@ def test_article_fsm_state_logging(db_session):
     assert saved_article.current_state == "COLLECTED"
     assert len(saved_article.state_logs) == 1
     assert saved_article.state_logs[0].to_state == "COLLECTED"
+

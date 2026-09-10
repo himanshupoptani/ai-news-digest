@@ -19,3 +19,4 @@ class Topic(Base):
 
     def __repr__(self):
         return f"<Topic(id={self.id}, name='{self.name}', parent_id={self.parent_id})>"
+

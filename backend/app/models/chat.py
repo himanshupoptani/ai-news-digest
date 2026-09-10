@@ -36,3 +36,4 @@ class ChatMessage(Base):
 
     def __repr__(self):
         return f"<ChatMessage(id={self.id}, role='{self.role}', session_id={self.session_id})>"
+

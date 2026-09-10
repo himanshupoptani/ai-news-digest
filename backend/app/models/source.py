@@ -19,3 +19,4 @@ class Source(Base):
 
     def __repr__(self):
         return f"<Source(id={self.id}, name='{self.name}', tier='{self.reliability_tier}')>"
+
