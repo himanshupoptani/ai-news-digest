@@ -19,3 +19,4 @@ class AnalyticsDashboardResponse(BaseModel):
     source_distribution: Dict[str, int]
     trending_topics: List[TrendingTopic]
     fsm_state_summary: Dict[str, int]
+

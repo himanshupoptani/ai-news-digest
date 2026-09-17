@@ -107,3 +107,4 @@ class AnalyticsService:
 
 # Singleton instance
 analytics_service = AnalyticsService()
+

@@ -88,3 +88,4 @@ def test_generate_dashboard_analytics(db):
     assert "Reuters" in analytics.source_distribution
     assert "Bloomberg" in analytics.source_distribution
     assert "PUBLISHED" in analytics.fsm_state_summary
+
