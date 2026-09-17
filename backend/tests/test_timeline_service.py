@@ -46,3 +46,4 @@ def test_generate_timeline_empty():
     res = TimelineService.generate_timeline([], event_topic="Empty Event")
     assert res.total_milestones == 0
     assert len(res.timeline) == 0
+

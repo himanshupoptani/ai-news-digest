@@ -9,6 +9,7 @@ from backend.app.services.bias_mitigator import BiasAnalysisReport, BiasMitigato
 from backend.app.services.chatbot_service import ChatbotService, chatbot_service
 from backend.app.services.graph_service import GraphService, graph_service
 from backend.app.services.timeline_service import TimelineService, timeline_service
+from backend.app.services.analytics_service import AnalyticsService, analytics_service
 
 __all__ = [
     "NewsFetcher",
@@ -41,4 +42,6 @@ __all__ = [
     "graph_service",
     "TimelineService",
     "timeline_service",
+    "AnalyticsService",
+    "analytics_service",
 ]

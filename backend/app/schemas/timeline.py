@@ -16,3 +16,4 @@ class TimelineResponse(BaseModel):
     event_topic: str
     total_milestones: int
     timeline: List[TimelineEntry]
+

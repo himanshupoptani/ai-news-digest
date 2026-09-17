@@ -84,3 +84,4 @@ class TimelineService:
 
 # Singleton instance
 timeline_service = TimelineService()
+
