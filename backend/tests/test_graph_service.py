@@ -63,3 +63,4 @@ def test_build_article_intelligence_graph():
     # Verify node groups
     groups = {n.group for n in graph.nodes}
     assert groups == {"topic", "source", "article"}
+

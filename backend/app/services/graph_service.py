@@ -141,3 +141,4 @@ class GraphService:
 
 # Singleton instance
 graph_service = GraphService()
+

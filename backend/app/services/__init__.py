@@ -8,6 +8,7 @@ from backend.app.services.hallucination_shield import HallucinationAuditReport, 
 from backend.app.services.bias_mitigator import BiasAnalysisReport, BiasMitigator, bias_mitigator
 from backend.app.services.chatbot_service import ChatbotService, chatbot_service
 from backend.app.services.graph_service import GraphService, graph_service
+from backend.app.services.timeline_service import TimelineService, timeline_service
 
 __all__ = [
     "NewsFetcher",
@@ -38,4 +39,6 @@ __all__ = [
     "chatbot_service",
     "GraphService",
     "graph_service",
+    "TimelineService",
+    "timeline_service",
 ]
