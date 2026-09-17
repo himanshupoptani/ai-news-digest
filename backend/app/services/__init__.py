@@ -7,6 +7,7 @@ from backend.app.services.rag_engine import GroundedCitation, GroundedDigest, RA
 from backend.app.services.hallucination_shield import HallucinationAuditReport, HallucinationShield, hallucination_shield
 from backend.app.services.bias_mitigator import BiasAnalysisReport, BiasMitigator, bias_mitigator
 from backend.app.services.chatbot_service import ChatbotService, chatbot_service
+from backend.app.services.graph_service import GraphService, graph_service
 
 __all__ = [
     "NewsFetcher",
@@ -35,4 +36,6 @@ __all__ = [
     "bias_mitigator",
     "ChatbotService",
     "chatbot_service",
+    "GraphService",
+    "graph_service",
 ]
