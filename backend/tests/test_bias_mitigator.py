@@ -48,3 +48,4 @@ def test_consensus_and_divergence_extraction():
     assert len(consensus) > 0
     # Both sources reported $30B revenue
     assert any("Reuters" in c and "Bloomberg" in c for c in consensus)
+
