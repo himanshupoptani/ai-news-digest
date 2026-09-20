@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI News Intelligence Platform</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#3b82f6', dark: '#1d4ed8' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/css/styles.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body class="min-h-screen bg-[#0b0f19] text-slate-200">
+
+  <!-- Global Loading Spinner -->
+  <div id="global-spinner" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center pointer-events-none">
+    <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+
+  <!-- Error Toast -->
+  <div id="error-toast" class="hidden fixed bottom-4 right-4 z-50 bg-red-600 text-white text-sm px-4 py-3 rounded-xl shadow-lg max-w-sm">
+  </div>
+
+  <!-- ===================== LAYOUT ===================== -->
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- ====== SIDEBAR ====== -->
+    <aside class="w-64 flex-shrink-0 bg-[#0d1117] border-r border-slate-800 flex flex-col">
+      <!-- Logo -->
+      <div class="px-5 py-5 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">AI</div>
+          <div>
+            <div class="text-sm font-bold text-white leading-tight">AI-Digest</div>
+            <div class="text-xs text-slate-500">News Intelligence Platform</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <button id="nav-home" onclick="switchTab('home')"
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          Discover
+        </button>
+
+        <button id="nav-search" onclick="switchTab('search')"
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          News Search
+        </button>
+
+        <button id="nav-digest" onclick="switchTab('digest')"
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          AI Digest
+        </button>
+
+        <button id="nav-chat" onclick="switchTab('chat')"
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          Research Chat
+        </button>
+
+        <div class="pt-2 border-t border-slate-800 mt-2"></div>
+
+        <button id="nav-graph" onclick="switchTab('graph')"
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Knowledge Graph
+        </button>
+
+        <button id="nav-timeline" onclick="switchTab('timeline')"
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Timeline
+        </button>
+
+        <button id="nav-analytics" onclick="switchTab('analytics')"
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </button>
+      </nav>
+
+      <!-- Footer -->
+      <div class="px-4 py-3 border-t border-slate-800">
+        <div class="text-xs text-slate-600 text-center">v1.0 · Academic Project</div>
+      </div>
+    </aside>
+
+    <!-- ====== MAIN CONTENT ====== -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- Header -->
+      <header class="h-14 flex-shrink-0 border-b border-slate-800 bg-[#0d1117]/80 backdrop-blur-md flex items-center px-6 gap-4">
+        <h1 class="text-sm font-semibold text-white">AI News Intelligence Platform</h1>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-xs text-slate-500">Offline Demo Mode</span>
+          <div class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
+        </div>
+      </header>
+
+      <!-- Tab Content Area -->
+      <div class="flex-1 overflow-y-auto p-6">
+
+        <!-- ===== HOME ===== -->
+        <div id="panel-home" class="tab-panel">
+          <h2 class="text-xl font-bold text-white mb-4">Good day — Here's your Intelligence Brief</h2>
+          <div id="home-content" class="space-y-4">
+            <div class="glass-card rounded-xl p-8 text-center text-slate-500 text-sm animate-pulse">Loading briefing...</div>
+          </div>
+        </div>
+
+        <!-- ===== SEARCH ===== -->
+        <div id="panel-search" class="tab-panel hidden">
+          <h2 class="text-xl font-bold text-white mb-4">Live News Search</h2>
+          <div class="flex gap-3 mb-5">
+            <input id="search-input" type="text" placeholder="Search news — e.g. Nvidia earnings, AI safety..."
+              class="flex-1 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+            <button onclick="executeSearch()"
+              class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition">
+              Search
+            </button>
+          </div>
+          <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- ===== DIGEST ===== -->
+        <div id="panel-digest" class="tab-panel hidden">
+          <h2 class="text-xl font-bold text-white mb-4">AI News Intelligence Digest</h2>
+          <div class="flex gap-3 mb-5">
+            <input id="digest-input" type="text" placeholder="Enter topic — e.g. OpenAI safety, Nvidia chips..."
+              class="flex-1 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+            <button onclick="generateDigest()"
+              class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-xl transition">
+              Generate
+            </button>
+          </div>
+          <div id="digest-result" class="glass-card rounded-xl p-6">
+            <p class="text-slate-500 text-sm text-center">Enter a topic above to generate your AI-powered digest.</p>
+          </div>
+        </div>
+
+        <!-- ===== CHAT ===== -->
+        <div id="panel-chat" class="tab-panel hidden flex flex-col h-full">
+          <h2 class="text-xl font-bold text-white mb-4">News Research Chatbot</h2>
+          <div class="flex flex-col glass-card rounded-xl overflow-hidden" style="height: calc(100vh - 14rem);">
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-3">
+              <div class="flex justify-start mb-3">
+                <div class="glass-card rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-slate-300 max-w-[80%]">
+                  👋 Hello! I'm your AI News Research Assistant. Ask me anything about current events, and I'll search and summarize the latest news with cited sources.
+                </div>
+              </div>
+            </div>
+            <div class="border-t border-slate-700 p-4 flex gap-3">
+              <input id="chat-input" type="text" placeholder="Ask me about the latest news..."
+                class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+              <button onclick="sendChatMessage()"
+                class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition flex items-center gap-2">
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== GRAPH ===== -->
+        <div id="panel-graph" class="tab-panel hidden">
+          <h2 class="text-xl font-bold text-white mb-4">Source Knowledge Graph</h2>
+          <div class="flex gap-3 mb-5">
+            <input id="graph-topic-input" type="text" placeholder="Enter topic to map — e.g. Nvidia, AI Safety..."
+              class="flex-1 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+            <button onclick="loadGraph()"
+              class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition">
+              Build Graph
+            </button>
+          </div>
+          <div id="graph-content" class="glass-card rounded-xl p-6">
+            <p class="text-slate-500 text-sm text-center">Loading knowledge graph...</p>
+          </div>
+        </div>
+
+        <!-- ===== TIMELINE ===== -->
+        <div id="panel-timeline" class="tab-panel hidden">
+          <h2 class="text-xl font-bold text-white mb-4">Event Chronological Timeline</h2>
+          <div class="flex gap-3 mb-5">
+            <input id="timeline-input" type="text" placeholder="Enter event topic — e.g. AI safety, NASA Artemis..."
+              class="flex-1 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+            <button onclick="loadTimeline()"
+              class="px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white text-sm font-medium rounded-xl transition">
+              Build Timeline
+            </button>
+          </div>
+          <div id="timeline-content">
+            <p class="text-slate-500 text-sm text-center">Loading timeline...</p>
+          </div>
+        </div>
+
+        <!-- ===== ANALYTICS ===== -->
+        <div id="panel-analytics" class="tab-panel hidden">
+          <h2 class="text-xl font-bold text-white mb-4">Analytics Dashboard</h2>
+          <div id="analytics-content">
+            <div class="glass-card rounded-xl p-8 text-center text-slate-500 text-sm animate-pulse">Loading analytics...</div>
+          </div>
+        </div>
+
+      </div><!-- /tab content -->
+    </main>
+  </div><!-- /layout -->
+
+  <!-- Scripts -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+
+</body>
+</html>
+

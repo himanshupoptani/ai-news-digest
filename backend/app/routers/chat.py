@@ -56,3 +56,4 @@ def get_session_history(session_id: int, db: Session = Depends(get_db)):
             for m in messages
         ]
     }
+

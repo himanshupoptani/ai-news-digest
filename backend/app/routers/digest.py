@@ -66,3 +66,4 @@ def generate_ai_digest(request: DigestGenerationRequest):
         audit_report=audit_report,
         bias_report=bias_report
     )
+

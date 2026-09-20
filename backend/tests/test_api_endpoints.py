@@ -64,3 +64,4 @@ def test_intelligence_analytics_endpoint(client):
     assert "topic_distribution" in data
     assert "source_distribution" in data
     assert "trending_topics" in data
+

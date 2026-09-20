@@ -68,3 +68,4 @@ def serve_index_page(request: Request):
     return HTMLResponse(
         content=f"<h1>{settings.PROJECT_NAME} API Server is Online</h1><p>Visit <a href='/docs'>/docs</a> for Swagger UI.</p>"
     )
+

@@ -41,3 +41,4 @@ def get_dashboard_analytics(db: Session = Depends(get_db)):
     """Returns macro dashboard metrics, trend scores, and category distributions."""
     res = news_fetcher.search(query="news", limit=15)
     return analytics_service.generate_dashboard_analytics(res.articles, db)
+

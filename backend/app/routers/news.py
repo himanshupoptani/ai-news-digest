@@ -32,3 +32,4 @@ def search_news(request: NewsSearchRequest):
         total_found=len(final_selected),
         articles=final_selected
     )
+
