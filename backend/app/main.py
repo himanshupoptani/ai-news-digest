@@ -64,7 +64,11 @@ def serve_index_page(request: Request):
     """Serves the Single-Page Application (SPA) dashboard."""
     index_path = os.path.join(templates_dir, "index.html")
     if os.path.exists(index_path) and templates:
-        return templates.TemplateResponse("index.html", {"request": request, "project_name": settings.PROJECT_NAME})
+        return templates.TemplateResponse(
+            request=request, 
+            name="index.html", 
+            context={"project_name": settings.PROJECT_NAME}
+        )
     return HTMLResponse(
         content=f"<h1>{settings.PROJECT_NAME} API Server is Online</h1><p>Visit <a href='/docs'>/docs</a> for Swagger UI.</p>"
     )
