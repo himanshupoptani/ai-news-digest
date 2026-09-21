@@ -254,3 +254,4 @@ start docs\coverage_report\index.html
 ---
 
 *Report generated automatically by pytest-cov. All tests run in offline demo mode (`APP_MODE=demo`) for deterministic, network-independent verification.*
+
