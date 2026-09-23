@@ -145,8 +145,12 @@ class HallucinationShield:
             mitigation_applied = True
 
         if strength == "INSUFFICIENT":
-            sanitized_text = "I could not find sufficient evidence in the retrieved news sources to answer this reliably."
-            warnings.append("Evidence threshold not met. Replaced speculative text with safe refusal.")
+            if search_results:
+                top_chunk = search_results[0].chunk
+                sanitized_text = f"Limited evidence retrieved: {top_chunk.article_title} - {top_chunk.text[:200]} [1]"
+            else:
+                sanitized_text = "I could not find sufficient evidence in the retrieved news sources to answer this reliably."
+            warnings.append("Evidence threshold not met. Provided limited grounded excerpt instead of speculative text.")
             mitigation_applied = True
         elif strength == "LOW":
             warnings.append("Low evidence confidence: Coverage is based on limited or single-source information.")

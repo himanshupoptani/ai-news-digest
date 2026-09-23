@@ -120,7 +120,7 @@ class ChatbotService:
         rewritten_query = cls.resolve_query_context(request.message, history)
 
         # 5. Retrieve news based on rewritten query
-        search_res = news_fetcher.search(query=rewritten_query, limit=5)
+        search_res = news_fetcher.search(query=rewritten_query, limit=10)
         raw_articles = search_res.articles
 
         # 6. Index into isolated vector store
@@ -128,7 +128,7 @@ class ChatbotService:
         session_vector_store.add_articles(raw_articles)
 
         # 7. Semantic Vector Search
-        relevant_chunks = session_vector_store.similarity_search(rewritten_query, top_k=3, min_score=0.10)
+        relevant_chunks = session_vector_store.similarity_search(rewritten_query, top_k=4, min_score=0.05)
 
         # 8. Synthesize grounded answer via RAGEngine
         digest = rag_engine.synthesize_digest(rewritten_query, relevant_chunks)

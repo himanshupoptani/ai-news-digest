@@ -114,15 +114,27 @@ function renderHome(health, analytics) {
     </div>
   `;
 
+  // Update dynamic top-right header indicator
+  const modeTextEl = document.getElementById("header-mode-text");
+  const modeDotEl = document.getElementById("header-mode-dot");
+  if (modeTextEl) {
+    modeTextEl.textContent = health.app_mode === "live" ? "Live Intelligence Mode" : "Offline Demo Mode";
+  }
+  if (modeDotEl) {
+    modeDotEl.className = `w-2.5 h-2.5 rounded-full ${health.app_mode === "live" ? "bg-emerald-400" : "bg-yellow-400"} animate-pulse`;
+  }
+  State.appMode = health.app_mode;
+
   el.innerHTML = `
     ${statHtml}
     <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">Trending Right Now</h2>
     <div class="flex flex-wrap gap-2 mb-6">${trendingHtml}</div>
     <div class="glass-card rounded-xl p-4 flex items-center gap-3">
-      <div class="w-2 h-2 rounded-full ${health.app_mode === 'live' ? 'bg-emerald-400' : 'bg-yellow-400'} animate-pulse"></div>
+      <div class="w-2.5 h-2.5 rounded-full ${health.app_mode === 'live' ? 'bg-emerald-400' : 'bg-yellow-400'} animate-pulse"></div>
       <span class="text-sm text-slate-300">
         Platform Mode: <strong class="text-white">${health.app_mode.toUpperCase()}</strong> &nbsp;|&nbsp;
-        Database: <strong class="text-emerald-400">${health.database}</strong>
+        Database: <strong class="text-emerald-400">${health.database}</strong> &nbsp;|&nbsp;
+        Engine: <strong class="text-blue-400">${health.app_mode === 'live' ? 'Gemini 3.6 Flash + Live RSS' : 'Offline Extractive RAG'}</strong>
       </span>
     </div>
   `;
@@ -142,7 +154,8 @@ async function executeSearch() {
   if (!query) return;
   try {
     setLoading(true);
-    const res = await Api.searchNews(query, 6, "demo");
+    const mode = State.appMode || "live";
+    const res = await Api.searchNews(query, 6, mode);
     renderSearchResults(res);
   } catch (e) {
     showError("Search failed: " + e.message);
@@ -181,7 +194,8 @@ async function generateDigest() {
   if (!query) return;
   try {
     setLoading(true);
-    const res = await Api.generateDigest(query, "demo");
+    const mode = State.appMode || "live";
+    const res = await Api.generateDigest(query, mode);
     renderDigest(res);
   } catch (e) {
     showError("Digest failed: " + e.message);

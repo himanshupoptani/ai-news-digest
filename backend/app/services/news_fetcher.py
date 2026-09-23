@@ -172,20 +172,24 @@ class NewsFetcher:
             return []
 
         url = "https://newsapi.org/v2/everything"
+        # Using 'relevancy' ensures specific queries like 'apple earnings' return relevant stories instead of random fruit exports
         params = {
             "q": query,
-            "sortBy": "publishedAt",
+            "sortBy": "relevancy",
             "language": "en",
-            "pageSize": limit,
+            "pageSize": min(20, max(limit * 2, 10)),
             "apiKey": settings.NEWS_API_KEY
         }
 
-        response = requests.get(url, params=params, timeout=5)
-        if response.status_code != 200:
-            logger.error(f"NewsAPI returned error: {response.status_code}")
+        try:
+            response = requests.get(url, params=params, timeout=8)
+            if response.status_code != 200:
+                logger.error(f"NewsAPI returned error: {response.status_code}")
+                return []
+            data = response.json()
+        except Exception as e:
+            logger.error(f"NewsAPI request failed: {e}")
             return []
-
-        data = response.json()
         articles = []
         for item in data.get("articles", []):
             articles.append(
