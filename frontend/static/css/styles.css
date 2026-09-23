@@ -34,9 +34,9 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.1rem 0.4rem;
+  padding: 0.15rem 0.45rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 9999px;
   background-color: rgba(59, 130, 246, 0.2);
   color: #60a5fa;
@@ -54,14 +54,48 @@ body {
 
 /* Glassmorphism Card Effect */
 .glass-card {
-  background: rgba(17, 24, 39, 0.85);
-  backdrop-filter: blur(12px);
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card-hover:hover {
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(59, 130, 246, 0.45);
   transform: translateY(-2px);
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 15px 0 rgba(59, 130, 246, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Breaking Ticker Animation */
+@keyframes ticker {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.ticker-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-content {
+  display: inline-flex;
+  animation: ticker 45s linear infinite;
+}
+
+.ticker-content:hover {
+  animation-play-state: paused;
+}
+
+/* D3 Graph container styles */
+#graph-canvas {
+  width: 100%;
+  height: 520px;
+  background: radial-gradient(circle at center, #111827 0%, #0b0f19 100%);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: grab;
+}
+
+#graph-canvas:active {
+  cursor: grabbing;
+}

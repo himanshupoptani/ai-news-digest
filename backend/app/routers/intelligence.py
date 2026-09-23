@@ -39,6 +39,14 @@ def get_event_timeline(
 @router.get("/analytics", response_model=AnalyticsDashboardResponse)
 def get_dashboard_analytics(db: Session = Depends(get_db)):
     """Returns macro dashboard metrics, trend scores, and category distributions."""
-    res = news_fetcher.search(query="news", limit=15)
-    return analytics_service.generate_dashboard_analytics(res.articles, db)
+    res = news_fetcher.search(query="news", limit=20)
+    articles = list(res.articles)
+    # Ensure offline sample dataset is also represented for complete analytics coverage
+    offline_samples = news_fetcher.fetch_offline_sample("news", limit=15)
+    seen_urls = {a.url for a in articles}
+    for off in offline_samples:
+        if off.url not in seen_urls:
+            articles.append(off)
+            seen_urls.add(off.url)
+    return analytics_service.generate_dashboard_analytics(articles, db)
 

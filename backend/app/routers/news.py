@@ -33,3 +33,18 @@ def search_news(request: NewsSearchRequest):
         articles=final_selected
     )
 
+@router.get("/headlines")
+def get_top_headlines(
+    category: str = Query(default="all", description="Category: all, tech, business, science, ai"),
+    limit: int = Query(default=12, ge=1, le=30)
+):
+    """Returns breaking news headlines enriched with sentiment, entities, and impact level."""
+    articles = news_fetcher.fetch_top_headlines(category=category, limit=limit)
+    return {
+        "category": category,
+        "mode_used": "live-api" if news_fetcher.search("news", limit=1).mode_used == "live-api" else "live-rss",
+        "total_count": len(articles),
+        "articles": [a.model_dump() for a in articles]
+    }
+
+

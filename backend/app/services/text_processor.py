@@ -175,5 +175,83 @@ class TextProcessor:
 
         return unique_articles, duplicate_clusters
 
+    @classmethod
+    def extract_intelligence(cls, title: str, text: str) -> "ArticleIntelligence":
+        """
+        Extracts semantic metadata:
+        - Sentiment (Bullish/Positive, Bearish/Negative, Neutral)
+        - Named Entities (Companies, figures, currency, technologies)
+        - Reading time & Impact level
+        """
+        from backend.app.schemas.news import ArticleIntelligence
+
+        full_corpus = f"{title} {text}".lower()
+
+        # 1. Sentiment Lexicon scoring
+        positive_cues = {
+            "record", "surge", "surges", "soar", "soars", "profit", "gain", "gains", "jump", 
+            "jumps", "beat", "beats", "rally", "growth", "high", "breakthrough", "success", 
+            "bullish", "expansion", "partnership", "approved", "milestone", "innovation"
+        }
+        negative_cues = {
+            "drop", "drops", "fall", "falls", "plunge", "loss", "losses", "miss", "misses", 
+            "delay", "delays", "crash", "decline", "warn", "warning", "slump", "investigation", 
+            "probe", "lawsuit", "layoff", "layoffs", "breach", "vulnerability", "ban", "debt"
+        }
+
+        tokens = cls.tokenize(full_corpus, remove_stop_words=False)
+        pos_hits = len(tokens.intersection(positive_cues))
+        neg_hits = len(tokens.intersection(negative_cues))
+
+        if pos_hits > neg_hits:
+            sentiment = "Bullish / Positive"
+            score = round(min(1.0, 0.2 + (pos_hits - neg_hits) * 0.15), 2)
+        elif neg_hits > pos_hits:
+            sentiment = "Bearish / Cautionary"
+            score = round(max(-1.0, -0.2 - (neg_hits - pos_hits) * 0.15), 2)
+        else:
+            sentiment = "Neutral / Factual"
+            score = 0.0
+
+        # 2. Entity Extraction using TitleCase and Known Patterns
+        raw_combined = f"{title}. {text}"
+        found_entities = set()
+        
+        # Currency / Financial figures
+        fin_matches = re.findall(r"[\$€£₹]\s?\d+(?:\.\d+)?\s?(?:billion|million|trillion|B|M|T)?", raw_combined, re.IGNORECASE)
+        for f in fin_matches[:3]:
+            found_entities.add(f.strip())
+
+        # Prominent Tech & Finance Named Entities
+        KNOWN_ENTITIES = [
+            "Apple", "Microsoft", "Google", "DeepMind", "Nvidia", "OpenAI", "Anthropic", 
+            "TSMC", "Meta", "Amazon", "Tesla", "SpaceX", "NASA", "Intel", "Samsung", 
+            "Federal Reserve", "Jerome Powell", "Jensen Huang", "Tim Cook", "Sam Altman", 
+            "Blackwell", "Claude", "ChatGPT", "Gemini", "Llama", "Artemis", "Wall Street"
+        ]
+        for ent in KNOWN_ENTITIES:
+            if re.search(r"\b" + re.escape(ent) + r"\b", raw_combined, re.IGNORECASE):
+                found_entities.add(ent)
+
+        # 3. Reading time estimation (average 200 words per minute)
+        word_count = len(text.split())
+        read_time = max(1, round(word_count / 200))
+
+        # 4. Impact level calculation
+        if len(found_entities) >= 3 or abs(score) >= 0.5:
+            impact = "High Impact"
+        elif len(found_entities) >= 1 or abs(score) >= 0.2:
+            impact = "Moderate Impact"
+        else:
+            impact = "Standard Update"
+
+        return ArticleIntelligence(
+            sentiment=sentiment,
+            sentiment_score=score,
+            entities=sorted(list(found_entities))[:6],
+            impact_level=impact,
+            reading_time_min=read_time
+        )
+
 text_processor = TextProcessor()
 

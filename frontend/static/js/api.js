@@ -23,14 +23,23 @@ const Api = {
     return res.json();
   },
 
+  // ---- Headlines Feed ----
+  getHeadlines(category = "all", limit = 12) {
+    return this.get(`/api/news/headlines?category=${encodeURIComponent(category)}&limit=${limit}`);
+  },
+
   // ---- News Search ----
-  searchNews(query, limit = 6, mode = "demo") {
-    return this.post("/api/news/search", { query, limit, mode });
+  searchNews(query, limit = 8, mode = null) {
+    const payload = { query, limit };
+    if (mode) payload.mode = mode;
+    return this.post("/api/news/search", payload);
   },
 
   // ---- AI Digest ----
-  generateDigest(query, mode = "demo") {
-    return this.post("/api/digest/generate", { query, mode });
+  generateDigest(query, mode = null) {
+    const payload = { query };
+    if (mode) payload.mode = mode;
+    return this.post("/api/digest/generate", payload);
   },
 
   // ---- Chat ----
@@ -61,4 +70,3 @@ const Api = {
     return this.get("/api/health");
   }
 };
-

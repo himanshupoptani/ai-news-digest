@@ -1,6 +1,14 @@
 from pydantic import BaseModel, Field, HttpUrl
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
+
+class ArticleIntelligence(BaseModel):
+    """Deep analytical metadata extracted from an article."""
+    sentiment: str = "Neutral"  # Bullish, Bearish, Neutral
+    sentiment_score: float = 0.0  # -1.0 to +1.0
+    entities: List[str] = []  # Companies, leaders, tech terms
+    impact_level: str = "Medium"  # High, Medium, Low
+    reading_time_min: int = 2
 
 class RawArticle(BaseModel):
     """Unified Data Transfer Object for articles ingested from any source (API, RSS, Demo)."""
@@ -12,6 +20,7 @@ class RawArticle(BaseModel):
     content: str
     category: Optional[str] = "General"
     image_url: Optional[str] = None
+    intelligence: Optional[ArticleIntelligence] = None
 
 class NewsSearchRequest(BaseModel):
     """Schema for incoming news search queries."""
@@ -26,3 +35,9 @@ class NewsSearchResponse(BaseModel):
     total_found: int
     articles: List[RawArticle]
 
+class HeadlinesResponse(BaseModel):
+    """Real-time breaking headlines feed grouped by category."""
+    category: str
+    mode_used: str
+    total_count: int
+    articles: List[RawArticle]
