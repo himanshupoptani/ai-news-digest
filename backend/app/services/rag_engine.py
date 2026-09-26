@@ -178,7 +178,13 @@ class RAGEngine:
             raise RuntimeError(f"Gemini API error: {resp.status_code}")
 
         data = resp.json()
-        generated_text = data["candidates"][0]["content"]["parts"][0]["text"]
+        candidates = data.get("candidates", [])
+        if not candidates:
+            raise RuntimeError(f"Gemini returned no candidates: {data}")
+        parts = candidates[0].get("content", {}).get("parts", [])
+        if not parts or "text" not in parts[0]:
+            raise RuntimeError("Gemini candidate has no text part")
+        generated_text = parts[0]["text"]
 
         # Parse generated text into summary and key points
         lines = [line.strip() for line in generated_text.split("\n") if line.strip()]

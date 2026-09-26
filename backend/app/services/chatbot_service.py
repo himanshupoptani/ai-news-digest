@@ -128,7 +128,7 @@ class ChatbotService:
         session_vector_store.add_articles(raw_articles)
 
         # 7. Semantic Vector Search
-        relevant_chunks = session_vector_store.similarity_search(rewritten_query, top_k=4, min_score=0.05)
+        relevant_chunks = session_vector_store.similarity_search(rewritten_query, top_k=4, min_score=0.03)
 
         # 8. Synthesize grounded answer via RAGEngine
         digest = rag_engine.synthesize_digest(rewritten_query, relevant_chunks)

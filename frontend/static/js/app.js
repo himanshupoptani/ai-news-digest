@@ -164,6 +164,10 @@ function renderMacroStats(analytics, currentCount) {
   `;
 }
 
+function refreshHome() {
+  loadHome();
+}
+
 function setHeadlinesCategory(cat) {
   State.activeCategory = cat;
   document.querySelectorAll(".cat-pill").forEach(p => {
@@ -187,14 +191,25 @@ function renderHeadlinesGrid(articles) {
   }
   State.cachedHeadlines = articles;
 
+  const countBadge = document.getElementById("article-count-badge");
+  if (countBadge) countBadge.textContent = `${articles.length} verified stories streamed`;
+
   el.innerHTML = articles.map((art, idx) => {
     const intel = art.intelligence || {};
     const imgHtml = art.image_url ? `
       <div class="h-40 w-full overflow-hidden bg-slate-900 relative">
-        <img src="${art.image_url}" alt="news cover" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'"/>
+        <img src="${art.image_url}" alt="news cover" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.parentElement.style.display='none'"/>
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
       </div>
-    ` : "";
+    ` : `
+      <div class="h-20 w-full bg-gradient-to-r from-slate-900 via-slate-800/80 to-blue-950/30 px-5 flex items-center justify-between border-b border-slate-800/80">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+          <span class="text-[11px] font-mono font-bold tracking-wider uppercase text-blue-400">${art.category || 'LIVE NEWS'}</span>
+        </div>
+        <span class="text-[10px] text-slate-500 font-mono">VERIFIED WIRE</span>
+      </div>
+    `;
 
     const entityPills = (intel.entities || []).slice(0, 3).map(e => `
       <span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-[10px] text-slate-400 border border-slate-700/60 font-medium"># ${e}</span>

@@ -104,11 +104,11 @@ class InMemoryVectorStore:
         self, 
         query: str, 
         top_k: int = 4, 
-        min_score: float = 0.10
+        min_score: float = 0.03
     ) -> List[SearchResult]:
         """
         Finds the top-K most semantically relevant chunks for a user query.
-        Filters out any chunks below the min_score threshold.
+        Filters out any chunks below the min_score threshold, with graceful fallback to top chunk.
         """
         if not self.chunks or self.vectorizer is None or self.tfidf_matrix is None:
             return []
@@ -134,6 +134,20 @@ class InMemoryVectorStore:
 
             # Sort descending by similarity score
             scored_results.sort(key=lambda x: x.similarity_score, reverse=True)
+
+            # Graceful fallback: If query phrasing was different but has some positive semantic signal
+            if not scored_results and len(similarities) > 0:
+                import numpy as np
+                best_idx = int(np.argmax(similarities))
+                best_sim = float(similarities[best_idx])
+                if best_sim > 0.01:
+                    scored_results.append(
+                        SearchResult(
+                            chunk=self.chunks[best_idx],
+                            similarity_score=round(best_sim, 4)
+                        )
+                    )
+
             return scored_results[:top_k]
 
         except Exception:

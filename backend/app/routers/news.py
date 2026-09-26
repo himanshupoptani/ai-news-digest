@@ -39,10 +39,12 @@ def get_top_headlines(
     limit: int = Query(default=12, ge=1, le=30)
 ):
     """Returns breaking news headlines enriched with sentiment, entities, and impact level."""
+    from backend.app.config import settings as app_settings
     articles = news_fetcher.fetch_top_headlines(category=category, limit=limit)
+    mode = "live-api" if app_settings.NEWS_API_KEY and app_settings.APP_MODE == "live" else "live-rss"
     return {
         "category": category,
-        "mode_used": "live-api" if news_fetcher.search("news", limit=1).mode_used == "live-api" else "live-rss",
+        "mode_used": mode,
         "total_count": len(articles),
         "articles": [a.model_dump() for a in articles]
     }
