@@ -95,25 +95,44 @@ function formatTimeAgo(dateStr) {
 // ============================================================
 // HOME & BREAKING NEWS TAB
 // ============================================================
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 async function loadHome() {
   try {
     setLoading(true);
     const [health, headlinesRes, analyticsRes] = await Promise.all([
       Api.getHealth().catch(() => ({ status: "online", app_mode: "live" })),
-      Api.getHeadlines(State.activeCategory, 12).catch(() => ({ articles: [] })),
+      Api.getHeadlines(State.activeCategory, 12).catch(e => {
+        console.error("Headlines fetch error:", e);
+        return { articles: [] };
+      }),
       Api.getAnalytics().catch(() => ({ total_articles: 16, total_sources: 9, trending_topics: [] }))
     ]);
 
     State.appMode = health.app_mode || "live";
     updateHeaderMode(health);
-    renderTicker(headlinesRes.articles || []);
-    renderMacroStats(analyticsRes, headlinesRes.articles?.length || 0);
-    renderHeadlinesGrid(headlinesRes.articles || []);
+    State.cachedHeadlines = headlinesRes.articles || [];
+    
+    try { renderTicker(State.cachedHeadlines); } catch (err) { console.error("Ticker error:", err); }
+    try { renderMacroStats(analyticsRes, State.cachedHeadlines.length); } catch (err) { console.error("Stats error:", err); }
+    try { renderHeadlinesGrid(State.cachedHeadlines); } catch (err) { console.error("Grid error:", err); }
   } catch (e) {
     showError("Failed to stream news: " + e.message);
   } finally {
     setLoading(false);
   }
+}
+
+function refreshHome() {
+  loadHome();
 }
 
 function updateHeaderMode(health) {
@@ -126,14 +145,13 @@ function updateHeaderMode(health) {
 function renderTicker(articles) {
   const el = document.getElementById("ticker-container");
   if (!el || !articles.length) return;
-  const items = articles.map(a => `
-    <span class="inline-flex items-center gap-2 cursor-pointer hover:text-white transition" onclick='openArticleModal(${JSON.stringify(a).replace(/'/g, "&apos;")})'>
+  const items = articles.map((a, idx) => `
+    <span class="inline-flex items-center gap-2 cursor-pointer hover:text-white transition" onclick="openArticleModalById(${idx})">
       <span class="text-blue-400 font-bold">•</span>
-      <span class="font-semibold text-slate-200">${a.title}</span>
-      <span class="text-[10px] text-slate-500 font-mono">(${a.source_name || "Newswire"})</span>
+      <span class="font-semibold text-slate-200">${escapeHtml(a.title)}</span>
+      <span class="text-[10px] text-slate-500 font-mono">(${escapeHtml(a.source_name || "Newswire")})</span>
     </span>
   `).join("");
-  // Duplicate for seamless infinite loop
   el.innerHTML = items + items;
 }
 
@@ -177,8 +195,11 @@ function setHeadlinesCategory(cat) {
 function renderHeadlinesGrid(articles) {
   const el = document.getElementById("headlines-grid");
   if (!el) return;
+  const countBadge = document.getElementById("article-count-badge");
+  if (countBadge) countBadge.textContent = `${articles.length} Dispatches Active`;
+
   if (!articles.length) {
-    el.innerHTML = `<div class="glass-card rounded-2xl p-12 text-center text-slate-500 text-sm col-span-full">No articles found in this category.</div>`;
+    el.innerHTML = `<div class="glass-card rounded-2xl p-12 text-center text-slate-500 text-sm col-span-full">No articles found in this category. Click Refresh to reload wire.</div>`;
     return;
   }
   State.cachedHeadlines = articles;
@@ -187,14 +208,21 @@ function renderHeadlinesGrid(articles) {
     const intel = art.intelligence || {};
     const imgHtml = art.image_url ? `
       <div class="h-40 w-full overflow-hidden bg-slate-900 relative">
-        <img src="${art.image_url}" alt="news cover" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'"/>
+        <img src="${art.image_url}" alt="news cover" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.parentElement.style.display='none'"/>
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
       </div>
-    ` : "";
-
-    const entityPills = (intel.entities || []).slice(0, 3).map(e => `
-      <span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-[10px] text-slate-400 border border-slate-700/60 font-medium"># ${e}</span>
-    `).join("");
+    ` : `
+      <div class="h-28 w-full bg-gradient-to-br from-slate-900 to-slate-950 border-b border-slate-800/80 p-4 flex flex-col justify-between relative overflow-hidden">
+        <div class="flex items-center justify-between z-10">
+          <span class="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> VERIFIED WIRE
+          </span>
+          <span class="text-[10px] text-slate-500 font-mono">${escapeHtml(art.source_name || "Newswire")}</span>
+        </div>
+        <div class="text-xs text-slate-400 font-semibold truncate z-10">${escapeHtml(art.category || "General")} · Real-Time Corroborated</div>
+        <div class="absolute -right-4 -bottom-4 text-slate-800/40 text-6xl font-black font-mono select-none">NX</div>
+      </div>
+    `;
 
     return `
       <div class="glass-card glass-card-hover rounded-2xl overflow-hidden border border-slate-800 flex flex-col group cursor-pointer" onclick="openArticleModalById(${idx})">
@@ -202,18 +230,18 @@ function renderHeadlinesGrid(articles) {
         <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
           <div>
             <div class="flex items-center justify-between gap-2 mb-2.5">
-              <span class="text-xs font-semibold text-blue-400">${art.source_name || "Newswire"}</span>
-              <span class="text-[11px] text-slate-500 font-mono">${formatTimeAgo(art.published_at)}</span>
+              <span class="text-xs font-semibold text-blue-400 truncate">${escapeHtml(art.source_name || "Newswire")}</span>
+              <span class="text-[11px] text-slate-500 font-mono flex-shrink-0">${formatTimeAgo(art.published_at)}</span>
             </div>
-            <h3 class="font-bold text-white text-sm leading-snug group-hover:text-blue-300 transition line-clamp-2">${art.title}</h3>
-            <p class="text-xs text-slate-400 line-clamp-2 mt-2 leading-relaxed">${art.content?.slice(0, 150) || ""}...</p>
+            <h3 class="font-bold text-white text-sm leading-snug group-hover:text-blue-300 transition line-clamp-2">${escapeHtml(art.title)}</h3>
+            <p class="text-xs text-slate-400 line-clamp-2 mt-2 leading-relaxed">${escapeHtml(art.content?.slice(0, 150) || "")}...</p>
           </div>
 
           <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
             <div class="flex items-center gap-1.5 flex-wrap">
               ${sentimentBadge(intel.sentiment)}
             </div>
-            <span class="text-[11px] text-blue-400 font-semibold group-hover:translate-x-0.5 transition">Deep Dive →</span>
+            <span class="text-[11px] text-blue-400 font-semibold group-hover:translate-x-0.5 transition font-mono">Deep Dive →</span>
           </div>
         </div>
       </div>
