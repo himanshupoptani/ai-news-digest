@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI News Intelligence Platform · Pro Terminal</title>
+  <title>NEXUS INTELLIGENCE · Global Real-Time News Terminal</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,7 +13,7 @@
       theme: {
         extend: {
           colors: {
-            brand: { DEFAULT: '#3b82f6', dark: '#1d4ed8', glow: 'rgba(59, 130, 246, 0.5)' }
+            brand: { DEFAULT: '#2563eb', dark: '#1d4ed8', glow: 'rgba(37, 99, 235, 0.4)' }
           }
         }
       }
@@ -26,37 +26,37 @@
   <!-- Custom Styles -->
   <link rel="stylesheet" href="/static/css/styles.css" />
 
-  <!-- Google Fonts: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 </head>
 
-<body class="min-h-screen bg-[#070a12] text-slate-200 antialiased selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen bg-[#060911] text-slate-200 antialiased selection:bg-blue-600 selection:text-white font-sans">
 
   <!-- Global Loading Spinner -->
   <div id="global-spinner" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center pointer-events-none">
     <div class="flex flex-col items-center gap-3">
-      <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      <span class="text-xs font-semibold tracking-wider uppercase text-blue-400">Synthesizing Intelligence...</span>
+      <div class="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <span class="text-xs font-semibold tracking-wider uppercase text-blue-400 font-mono">Syncing Global Wire...</span>
     </div>
   </div>
 
   <!-- Error Toast -->
-  <div id="error-toast" class="hidden fixed bottom-6 right-6 z-50 bg-red-950/90 border border-red-500 text-red-200 text-sm px-5 py-3 rounded-xl shadow-2xl max-w-md backdrop-blur-md"></div>
+  <div id="error-toast" class="hidden fixed bottom-6 right-6 z-50 bg-rose-950/90 border border-rose-500 text-rose-200 text-xs px-5 py-3 rounded-xl shadow-2xl max-w-md backdrop-blur-md"></div>
 
   <!-- ===================== ARTICLE READER MODAL ===================== -->
   <div id="article-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-card rounded-2xl border border-slate-700 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+    <div class="glass-card rounded-2xl border border-slate-700/80 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
       <!-- Modal Header -->
       <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
         <div class="flex items-center gap-2">
           <span id="modal-category-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Technology</span>
-          <span id="modal-source-badge" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">Bloomberg</span>
+          <span id="modal-source-badge" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300">Newswire</span>
         </div>
         <div class="flex items-center gap-2">
           <!-- Text to Speech Listen Button -->
           <button id="modal-audio-btn" onclick="toggleAudioBriefing()" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-medium flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-            <span id="audio-btn-text">Listen Audio</span>
+            <span id="audio-btn-text">Audio Briefing</span>
           </button>
           <button onclick="closeArticleModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">✕</button>
         </div>
@@ -66,7 +66,7 @@
       <div class="p-6 overflow-y-auto space-y-5">
         <h2 id="modal-title" class="text-xl md:text-2xl font-bold text-white leading-tight">Article Headline</h2>
         <div class="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-          <span id="modal-author">By Editorial Team</span>
+          <span id="modal-author">Editorial Wire</span>
           <span>•</span>
           <span id="modal-published-at">Just now</span>
           <span>•</span>
@@ -77,14 +77,14 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y border-slate-800/80">
           <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
             <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Market Sentiment</div>
-            <div id="modal-sentiment" class="text-sm font-semibold text-emerald-400 mt-0.5">Bullish / Positive</div>
+            <div id="modal-sentiment" class="text-sm font-semibold text-emerald-400 mt-0.5">Positive</div>
           </div>
           <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Impact Tier</div>
-            <div id="modal-impact" class="text-sm font-semibold text-blue-400 mt-0.5">High Impact</div>
+            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Impact Rating</div>
+            <div id="modal-impact" class="text-sm font-semibold text-blue-400 mt-0.5">High Priority</div>
           </div>
           <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 col-span-2">
-            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Detected Entities</div>
+            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Key Entities Detected</div>
             <div id="modal-entities" class="flex flex-wrap gap-1.5 mt-1"></div>
           </div>
         </div>
@@ -95,11 +95,11 @@
 
       <!-- Modal Footer -->
       <div class="px-6 py-4 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between">
-        <button id="modal-deep-digest-btn" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition flex items-center gap-2">
-          ✨ Generate Full AI RAG Digest
+        <button id="modal-deep-digest-btn" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition flex items-center gap-2">
+          ✨ Deep AI Intelligence Briefing
         </button>
         <a id="modal-external-link" href="#" target="_blank" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium hover:underline">
-          Read Original Source ↗
+          Open Original Source ↗
         </a>
       </div>
     </div>
@@ -109,96 +109,104 @@
   <div class="flex h-screen overflow-hidden">
 
     <!-- ====== SIDEBAR ====== -->
-    <aside class="w-64 flex-shrink-0 bg-[#0a0e1a] border-r border-slate-800/80 flex flex-col shadow-xl z-20">
+    <aside class="w-64 flex-shrink-0 bg-[#090d18] border-r border-slate-800/80 flex flex-col shadow-xl z-20">
       <!-- Logo -->
       <div class="px-5 py-4 border-b border-slate-800/80 flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-base shadow-lg shadow-blue-500/20">
-          AI
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white font-black text-sm tracking-widest shadow-lg shadow-blue-500/20">
+          NX
         </div>
         <div>
-          <div class="text-sm font-bold text-white tracking-wide">AI-DIGEST</div>
-          <div class="text-[10px] text-blue-400 font-mono">Intelligence Terminal v2.0</div>
+          <div class="text-sm font-extrabold text-white tracking-wider font-mono">NEXUS</div>
+          <div class="text-[10px] text-emerald-400 font-mono flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            GLOBAL INTELLIGENCE
+          </div>
         </div>
       </div>
 
       <!-- Navigation -->
-      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+      <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <button id="nav-home" onclick="switchTab('home')"
-          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/80 hover:text-white">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-          Live Feed & Briefing
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/70 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+          Live Wire & Feed
         </button>
 
         <button id="nav-search" onclick="switchTab('search')"
-          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/80 hover:text-white">
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/70 hover:text-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          Live News Search
+          Global Search
         </button>
 
         <button id="nav-digest" onclick="switchTab('digest')"
-          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/80 hover:text-white">
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/70 hover:text-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          AI RAG Digest
+          Executive Dossier
         </button>
 
         <button id="nav-chat" onclick="switchTab('chat')"
-          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/80 hover:text-white">
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/70 hover:text-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-          Research Chatbot
+          Research AI Assistant
         </button>
 
         <div class="pt-3 pb-1 border-t border-slate-800/80">
-          <span class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Intelligence Views</span>
+          <span class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">Market Visuals</span>
         </div>
 
         <button id="nav-graph" onclick="switchTab('graph')"
-          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/80 hover:text-white">
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/70 hover:text-white">
           <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          Interactive Graph
+          Knowledge Graph
         </button>
 
         <button id="nav-timeline" onclick="switchTab('timeline')"
-          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/80 hover:text-white">
-          <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Chronology Timeline
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/70 hover:text-white">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Event Chronology
         </button>
 
         <button id="nav-analytics" onclick="switchTab('analytics')"
-          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/80 hover:text-white">
+          class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-400 hover:bg-slate-800/70 hover:text-white">
           <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          Analytics & Bias HHI
+          Market Distribution
         </button>
       </nav>
 
       <!-- Sidebar Footer -->
-      <div class="px-4 py-3 border-t border-slate-800/80 bg-slate-950/40 text-center">
-        <div class="text-[11px] text-slate-400 font-mono">Academic Major Project</div>
-        <div class="text-[10px] text-slate-600 mt-0.5">Author: Himan</div>
+      <div class="px-4 py-3 border-t border-slate-800/80 bg-slate-950/60">
+        <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+          <span>Enterprise Pro</span>
+          <span class="text-emerald-400 font-semibold flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Wire Active
+          </span>
+        </div>
+        <div class="text-[10px] text-slate-500 mt-1">24/7 Real-Time Global Telemetry</div>
       </div>
     </aside>
 
     <!-- ====== MAIN CONTENT ====== -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-[#070a12]">
+    <main class="flex-1 flex flex-col overflow-hidden bg-[#060911]">
 
       <!-- Header -->
-      <header class="h-14 flex-shrink-0 border-b border-slate-800/80 bg-[#0a0e1a]/90 backdrop-blur-md flex items-center px-6 gap-4 z-10">
+      <header class="h-14 flex-shrink-0 border-b border-slate-800/80 bg-[#090d18]/90 backdrop-blur-md flex items-center px-6 gap-4 z-10">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <span class="text-xs font-bold tracking-wider text-slate-300 uppercase">Live Intelligence Terminal</span>
+          <span class="text-xs font-bold tracking-wider text-slate-300 uppercase font-mono">NEXUS SATELLITE WIRE</span>
         </div>
 
-        <div class="ml-auto flex items-center gap-4">
+        <div class="ml-auto flex items-center gap-3">
           <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800">
             <div id="header-mode-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-            <span id="header-mode-text" class="text-xs font-semibold text-slate-300">Live Mode</span>
+            <span id="header-mode-text" class="text-xs font-semibold text-slate-300 font-mono">Live Stream</span>
           </div>
         </div>
       </header>
 
       <!-- Breaking News Marquee Ticker Tape -->
       <div class="h-8 flex-shrink-0 bg-slate-900/90 border-b border-slate-800/80 flex items-center overflow-hidden z-10">
-        <div class="px-3 bg-red-600 text-white font-bold text-[10px] uppercase tracking-wider flex items-center h-full flex-shrink-0">
-          BREAKING
+        <div class="px-3 bg-red-600 text-white font-bold text-[10px] uppercase tracking-wider flex items-center h-full flex-shrink-0 font-mono">
+          BREAKING WIRE
         </div>
         <div class="ticker-wrap flex-1">
           <div id="ticker-container" class="ticker-content text-xs text-slate-300 flex items-center gap-8 pl-4">
@@ -214,17 +222,20 @@
         <div id="panel-home" class="tab-panel space-y-6">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-white tracking-tight">Real-Time News Stream</h2>
-              <p class="text-xs text-slate-400 mt-1">Multi-source verified intelligence feed from NewsAPI, Reuters & global RSS networks</p>
+              <h2 class="text-2xl font-black text-white tracking-tight">Global Real-Time Wire Feed</h2>
+              <p class="text-xs text-slate-400 mt-1">Multi-origin live ingestion across global publishers, technology wire, financial markets, and science networks</p>
             </div>
 
             <!-- Category Filter Pills -->
-            <div class="flex flex-wrap gap-1.5 p-1 rounded-xl bg-slate-900/80 border border-slate-800">
-              <button onclick="setHeadlinesCategory('all')" id="cat-all" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">All News</button>
+            <div class="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-900/80 border border-slate-800">
+              <button onclick="setHeadlinesCategory('all')" id="cat-all" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">All Markets</button>
               <button onclick="setHeadlinesCategory('tech')" id="cat-tech" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Technology</button>
-              <button onclick="setHeadlinesCategory('business')" id="cat-business" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Business & Markets</button>
-              <button onclick="setHeadlinesCategory('ai')" id="cat-ai" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">AI & Models</button>
-              <button onclick="setHeadlinesCategory('science')" id="cat-science" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Science</button>
+              <button onclick="setHeadlinesCategory('business')" id="cat-business" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Business & Finance</button>
+              <button onclick="setHeadlinesCategory('ai')" id="cat-ai" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">AI & Frontier Tech</button>
+              <button onclick="setHeadlinesCategory('science')" id="cat-science" class="cat-pill px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Science & Space</button>
+              <button onclick="refreshHome()" title="Refresh Feed" class="px-2 py-1 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </button>
             </div>
           </div>
 
@@ -233,39 +244,40 @@
 
           <!-- Breaking News Grid -->
           <div>
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              Latest Intelligence Stories
-            </h3>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 font-mono">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                Verified Dispatches
+              </h3>
+              <span id="article-count-badge" class="text-xs text-slate-500 font-mono"></span>
+            </div>
             <div id="headlines-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div class="glass-card rounded-2xl p-8 text-center text-slate-500 text-sm animate-pulse col-span-full">Streaming breaking stories...</div>
+              <div class="glass-card rounded-2xl p-8 text-center text-slate-500 text-sm animate-pulse col-span-full">Streaming live dispatches...</div>
             </div>
           </div>
         </div>
 
         <!-- ===== SEARCH TAB ===== -->
         <div id="panel-search" class="tab-panel hidden space-y-6">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 class="text-2xl font-black text-white tracking-tight">Live Intelligence Search</h2>
-              <p class="text-xs text-slate-400 mt-1">Full-text multi-source querying with deduplication and PEAS rational agent ranking</p>
-            </div>
+          <div>
+            <h2 class="text-2xl font-black text-white tracking-tight">Global News Search Engine</h2>
+            <p class="text-xs text-slate-400 mt-1">Instant querying across Google News, Reuters, Financial Times, Bloomberg, and regional media networks</p>
           </div>
 
           <div class="flex gap-3">
             <div class="relative flex-1">
-              <input id="search-input" type="text" placeholder="Search any topic, company or story — e.g. Apple earnings, Tesla, OpenAI, TSMC..."
+              <input id="search-input" type="text" placeholder="Search any topic, company or story — e.g. Apple earnings, Tesla, OpenAI, TSMC, Gaganyaan..."
                 class="w-full bg-slate-900/80 border border-slate-700/80 rounded-2xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner" />
               <svg class="w-4 h-4 text-slate-500 absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
             <button onclick="executeSearch()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-2xl transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
-              Run Search
+              Search
             </button>
           </div>
 
           <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="glass-card rounded-2xl p-12 text-center text-slate-500 text-sm col-span-full">
-              Enter a search query above to fetch and rank live news stories.
+              Enter any search query above to fetch and analyze live articles from worldwide wire networks.
             </div>
           </div>
         </div>
@@ -273,44 +285,83 @@
         <!-- ===== DIGEST TAB ===== -->
         <div id="panel-digest" class="tab-panel hidden space-y-6">
           <div>
-            <h2 class="text-2xl font-black text-white tracking-tight">AI Grounded News Digest</h2>
-            <p class="text-xs text-slate-400 mt-1">Synthesis with Gemini 3.6 Flash, explicit citation tags [1], [2], Hallucination Shield, and HHI media bias scoring</p>
+            <h2 class="text-2xl font-black text-white tracking-tight">Executive Intelligence Dossier</h2>
+            <p class="text-xs text-slate-400 mt-1">Deep multi-source synthesized briefings with key strategic takeaways, corroborated citations, and market insights</p>
           </div>
 
           <div class="flex gap-3">
-            <input id="digest-input" type="text" placeholder="Enter topic for verified briefing — e.g. Nvidia Blackwell, OpenAI safety, Federal Reserve..."
-              class="flex-1 bg-slate-900/80 border border-slate-700/80 rounded-2xl px-5 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition" />
-            <button onclick="generateDigest()" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-2xl transition shadow-lg shadow-purple-600/30 flex items-center gap-2">
+            <input id="digest-input" type="text" placeholder="Enter topic for verified intelligence briefing — e.g. Semiconductor supply chain, Federal Reserve, OpenAI developments..."
+              class="flex-1 bg-slate-900/80 border border-slate-700/80 rounded-2xl px-5 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+            <button onclick="generateDigest()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-2xl transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
               ✨ Generate Dossier
             </button>
           </div>
 
           <div id="digest-result" class="glass-card rounded-2xl p-6">
-            <p class="text-slate-500 text-sm text-center py-8">Enter a topic above to generate a grounded executive briefing.</p>
+            <p class="text-slate-500 text-sm text-center py-8">Enter a topic above to generate a comprehensive intelligence briefing.</p>
           </div>
         </div>
 
         <!-- ===== CHAT TAB ===== -->
-        <div id="panel-chat" class="tab-panel hidden flex flex-col h-full space-y-4">
-          <div>
-            <h2 class="text-2xl font-black text-white tracking-tight">Conversational News Research Chatbot</h2>
-            <p class="text-xs text-slate-400 mt-1">Multi-turn memory with pronoun context resolution and grounded source verification</p>
+        <div id="panel-chat" class="tab-panel hidden flex flex-col" style="height: calc(100vh - 7rem);">
+          <!-- Chat Header -->
+          <div class="flex items-center justify-between mb-4 flex-shrink-0">
+            <div>
+              <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Research AI Assistant
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Real-time live news querying · Context-aware memory · Sourced citations</p>
+            </div>
+            <button onclick="startNewChat()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              New Session
+            </button>
           </div>
 
-          <div class="flex flex-col glass-card rounded-2xl overflow-hidden border border-slate-800" style="height: calc(100vh - 16rem);">
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4">
-              <div class="flex justify-start">
-                <div class="glass-card rounded-2xl rounded-bl-sm px-5 py-4 text-sm text-slate-300 max-w-[85%] border border-slate-800">
-                  👋 Hello! I am your AI News Research Agent. Ask me about any ongoing news, company earnings, regulatory moves, or global events. I retrieve live sources, verify facts, and answer with citations.
+          <!-- Chat Window -->
+          <div class="flex-1 flex flex-col glass-card rounded-2xl overflow-hidden border border-slate-800 min-h-0">
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-5">
+              <!-- Messages injected by JS -->
+            </div>
+
+            <!-- Suggested Questions (shown initially) -->
+            <div id="chat-suggestions" class="px-5 pb-3 flex-shrink-0">
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 font-mono">Suggested Research Prompts</p>
+              <div id="suggestion-chips" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div id="chat-typing" class="hidden px-5 pb-2 flex-shrink-0">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+                  <span class="text-xs">🤖</span>
+                </div>
+                <div class="glass-card rounded-2xl rounded-bl-sm px-4 py-3 border border-slate-800 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:0ms"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:150ms"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:300ms"></span>
+                  <span class="text-xs text-slate-400 ml-2 font-mono">Analyzing live dispatches...</span>
                 </div>
               </div>
             </div>
-            <div class="border-t border-slate-800/80 p-4 bg-slate-900/60 flex gap-3">
-              <input id="chat-input" type="text" placeholder="Ask a question — e.g. 'What are the latest developments with Nvidia?', 'Why did Apple delay it?'"
-                class="flex-1 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
-              <button onclick="sendChatMessage()" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition flex items-center gap-2">
-                Send
-              </button>
+
+            <!-- Input Area -->
+            <div class="border-t border-slate-800/80 p-4 bg-slate-900/60 flex-shrink-0">
+              <div class="flex gap-3 items-end">
+                <textarea id="chat-input" rows="1"
+                  placeholder="Ask anything — e.g. 'What are the latest developments with Nvidia?', 'What happened with OpenAI?', 'India tech sector update'"
+                  class="flex-1 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none leading-relaxed"
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"
+                  oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+                <button onclick="sendChatMessage()" id="chat-send-btn"
+                  class="px-5 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 flex-shrink-0 shadow-lg shadow-blue-600/20">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  Send
+                </button>
+              </div>
+              <p class="text-[10px] text-slate-600 mt-2 font-mono">Press Enter to send · Shift+Enter for new line · Real-time live grounding</p>
             </div>
           </div>
         </div>
@@ -319,11 +370,11 @@
         <div id="panel-graph" class="tab-panel hidden space-y-6">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-white tracking-tight">Interactive Force-Directed Knowledge Graph</h2>
-              <p class="text-xs text-slate-400 mt-1">Drag, zoom, and inspect relational connections between Topics, Publishers, and Stories</p>
+              <h2 class="text-2xl font-black text-white tracking-tight">Interactive Entity Knowledge Graph</h2>
+              <p class="text-xs text-slate-400 mt-1">Inspect relational connections between Global Topics, Publishers, and Stories</p>
             </div>
             <div class="flex gap-2">
-              <input id="graph-topic-input" type="text" placeholder="Focus topic — e.g. Nvidia, AI"
+              <input id="graph-topic-input" type="text" placeholder="Filter topic — e.g. Nvidia, AI, Apple"
                 class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white" />
               <button onclick="loadGraph()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition">
                 Map Graph
@@ -337,7 +388,7 @@
               <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500"></span>Topic</span>
               <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span>Publisher</span>
               <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-500"></span>Article</span>
-              <span class="ml-auto text-[11px] text-slate-500 font-mono">Tip: Drag nodes or scroll to zoom</span>
+              <span class="ml-auto text-[11px] text-slate-500 font-mono">Drag nodes or scroll to zoom</span>
             </div>
             <div id="graph-canvas" class="flex items-center justify-center">
               <svg id="d3-graph-svg" class="w-full h-[520px]"></svg>
@@ -350,12 +401,12 @@
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h2 class="text-2xl font-black text-white tracking-tight">Event Chronology Timeline</h2>
-              <p class="text-xs text-slate-400 mt-1">Sequential milestone tape mapping how breaking stories developed over time</p>
+              <p class="text-xs text-slate-400 mt-1">Chronological development tape tracking how breaking stories evolve over time</p>
             </div>
             <div class="flex gap-2">
-              <input id="timeline-input" type="text" placeholder="Event topic — e.g. Apple, AI safety"
+              <input id="timeline-input" type="text" placeholder="Event topic — e.g. Apple, Artificial Intelligence"
                 class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white" />
-              <button onclick="loadTimeline()" class="px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold rounded-xl transition">
+              <button onclick="loadTimeline()" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl transition">
                 Build Timeline
               </button>
             </div>
@@ -366,8 +417,8 @@
         <!-- ===== ANALYTICS TAB ===== -->
         <div id="panel-analytics" class="tab-panel hidden space-y-6">
           <div>
-            <h2 class="text-2xl font-black text-white tracking-tight">Macro Market Analytics & Media Bias (HHI)</h2>
-            <p class="text-xs text-slate-400 mt-1">Publisher concentration index, topic momentum scores, and automated FSM verification audit</p>
+            <h2 class="text-2xl font-black text-white tracking-tight">Market Intelligence & Media Distribution</h2>
+            <p class="text-xs text-slate-400 mt-1">Publisher diversity metrics, narrative momentum, and automated cross-referencing telemetry</p>
           </div>
           <div id="analytics-content"></div>
         </div>

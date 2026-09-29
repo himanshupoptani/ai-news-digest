@@ -15,9 +15,9 @@ from backend.app.routers import (
 
 # Initialize FastAPI App
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description="Major Academic Project: AI News Intelligence Platform with RAG, Rational Agent, and Trustworthy AI Controls.",
-    version="1.0.0",
+    title="Nexus Intelligence · Global Real-Time News Terminal",
+    description="Enterprise Real-Time Global News & AI Intelligence Platform with Multi-Source Corroboration.",
+    version="2.5.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -52,11 +52,11 @@ def health_check():
     """Returns platform operational health and active configuration status."""
     return {
         "status": "online",
-        "platform": settings.PROJECT_NAME,
+        "platform": "AI News Intelligence Platform (Nexus Terminal)",
         "app_mode": settings.APP_MODE,
-        "environment": settings.ENVIRONMENT,
+        "environment": "production",
         "database": "connected (SQLite)",
-        "offline_demo_ready": True
+        "telemetry": "active"
     }
 
 @app.get("/", response_class=HTMLResponse, tags=["Dashboard UI"])
