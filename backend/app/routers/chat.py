@@ -5,9 +5,15 @@ from typing import List
 from backend.app.database import get_db
 from backend.app.models.chat import ChatSession, ChatMessage
 from backend.app.schemas.chat import ChatTurnRequest, ChatTurnResponse
-from backend.app.services.chatbot_service import chatbot_service
+from backend.app.services.chatbot_service import chatbot_service, SUGGESTED_PROMPTS
 
 router = APIRouter(prefix="/api/chat", tags=["Conversational News Chatbot"])
+
+@router.get("/suggest")
+def get_suggested_prompts():
+    """Returns a list of suggested conversation starters for the chatbot."""
+    return {"suggestions": SUGGESTED_PROMPTS}
+
 
 @router.post("/message", response_model=ChatTurnResponse)
 def send_chat_message(request: ChatTurnRequest, db: Session = Depends(get_db)):
