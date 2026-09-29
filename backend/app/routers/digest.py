@@ -49,7 +49,7 @@ def generate_ai_digest(request: DigestGenerationRequest):
     store.add_articles(selected_articles)
 
     # 5. Semantic Vector Search
-    relevant_chunks = store.similarity_search(request.query, top_k=4, min_score=0.03)
+    relevant_chunks = store.similarity_search(request.query, top_k=4, min_score=0.10)
 
     # 6. RAG Synthesis
     digest = rag_engine.synthesize_digest(request.query, relevant_chunks)
