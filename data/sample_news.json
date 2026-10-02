@@ -1,0 +1,137 @@
+[
+  {
+    "title": "OpenAI and Anthropic Sign Landmark AI Safety Testing Pact with US Institute",
+    "url": "https://reuters.com/technology/ai-safety-pact-2026",
+    "source_name": "Reuters",
+    "published_at": "2026-09-09T10:00:00Z",
+    "content": "OpenAI and Anthropic have formally signed a landmark safety testing agreement with the US AI Safety Institute, marking the first legally binding commitment by frontier AI laboratories to submit their most powerful models for independent government red-teaming before public release. The agreement, announced Tuesday at the Commerce Department headquarters, requires both companies to provide access to pre-deployment model checkpoints for structured adversarial evaluation. The US AI Safety Institute Director described the pact as a historic milestone in responsible AI governance. Representatives from the UK's equivalent body also attended as observers, signalling a coordinated international safety framework is being developed. Industry analysts noted that the voluntary pact could become the template for mandatory compliance legislation currently being drafted in three US states.",
+    "category": "AI",
+    "category_label": "Artificial Intelligence"
+  },
+  {
+    "title": "Nvidia Reports Record $30 Billion Quarterly Revenue Driven by AI Chip Demand",
+    "url": "https://bloomberg.com/technology/nvidia-earnings-q2-2026",
+    "source_name": "Bloomberg",
+    "published_at": "2026-09-08T20:00:00Z",
+    "content": "Nvidia Corporation announced record second-quarter revenues of $30.04 billion on Wednesday, a 122% year-on-year increase driven entirely by insatiable global demand for its H100 and Blackwell series AI accelerator chips. The company's data center segment alone contributed $26.3 billion, representing 87% of total revenue. CEO Jensen Huang credited sustained hyperscaler capital expenditure cycles from Microsoft, Google, Amazon, and Meta as the primary demand engine. Gross margins expanded to 78.4%, significantly above analyst consensus of 75.1%. The company also announced a $25 billion share buyback programme, its largest ever. Wall Street responded with a 6.2% surge in after-hours trading, pushing Nvidia's market capitalisation briefly above $3.8 trillion. Supply chain analysts highlighted that TSMC's 3nm CoWoS packaging capacity remains the primary production bottleneck as global AI infrastructure investment shows no sign of slowing.",
+    "category": "Tech",
+    "category_label": "Technology"
+  },
+  {
+    "title": "TSMC and Rapidus Announce Joint 2nm Foundry Expansion Plans for AI Chip Fabrication",
+    "url": "https://techcrunch.com/semiconductors/tsmc-rapidus-2nm-2026",
+    "source_name": "TechCrunch",
+    "published_at": "2026-09-07T11:00:00Z",
+    "content": "Taiwan Semiconductor Manufacturing Company (TSMC) and Japanese government-backed foundry Rapidus announced a strategic collaboration to jointly expand 2-nanometre semiconductor fabrication capacity specifically targeting AI accelerator chip demand. The partnership, formalised at a bilateral summit in Tokyo, includes a $14 billion joint investment in advanced EUV lithography equipment, with construction beginning at Rapidus's Chitose facility in Hokkaido scheduled for Q1 2027. TSMC will provide its N2P process technology under a licencing arrangement, while Rapidus contributes land, government subsidies, and workforce. The deal is seen as Japan's most ambitious push to rebuild its domestic semiconductor industry since the 1990s. US officials welcomed the announcement as consistent with allied chip security objectives under the CHIPS Act framework. Industry observers noted that the collaboration creates a critical alternative supply chain buffer against potential geopolitical disruptions to existing TSMC capacity concentrated in Taiwan.",
+    "category": "Tech",
+    "category_label": "Semiconductors"
+  },
+  {
+    "title": "Federal Reserve Signals Cautious Rate Cut Path as Inflation Data Remains Mixed",
+    "url": "https://wsj.com/economy/fed-rate-cut-2026",
+    "source_name": "Wall Street Journal",
+    "published_at": "2026-09-06T15:30:00Z",
+    "content": "Federal Reserve Chairman Jerome Powell indicated Wednesday that policymakers remain open to initiating interest rate cuts before year-end but emphasised that incoming economic data must provide greater confidence that inflation is sustainably returning to the 2% target. Speaking at the Brookings Institution, Powell acknowledged that the labour market has cooled meaningfully, with unemployment edging up to 4.3%, but cautioned that shelter and services inflation remain stubbornly above target. Markets interpreted his remarks as maintaining the possibility of a September cut while ruling out aggressive consecutive reductions. The CME FedWatch tool showed traders pricing a 62% probability of a 25 basis point cut at the September 18th FOMC meeting following Powell's address. Bond markets rallied modestly, with the 10-year Treasury yield falling to 4.18%. Economists at Goldman Sachs revised their baseline forecast to include two 25 basis point cuts in 2026, totalling 50 basis points of easing by December.",
+    "category": "Economy",
+    "category_label": "Federal Reserve & Finance"
+  },
+  {
+    "title": "NASA Artemis III Moon Landing Mission Faces Six-Month Delay Over Spacesuit Development",
+    "url": "https://space.com/nasa-artemis-delay-2026",
+    "source_name": "Space.com",
+    "published_at": "2026-09-05T08:00:00Z",
+    "content": "NASA officially announced a six-month delay to the Artemis III crewed lunar landing mission, pushing the target date from late 2026 to mid-2027, citing ongoing technical challenges with the Axiom Space xEMU next-generation lunar spacesuit system. NASA Administrator Bill Nelson confirmed the delay at a press conference at Johnson Space Centre, stating that the agency prioritises crew safety above schedule adherence. The xEMU suit, designed to allow astronauts to traverse the lunar south pole's permanently shadowed craters where water ice is believed to be abundant, has failed three consecutive pressure integrity tests at simulated lunar vacuum conditions. SpaceX's Starship Human Landing System, which passed its orbital refuelling demonstration last month, remains on schedule. NASA confirmed the crew manifest for Artemis III is unchanged: Commander Reid Wiseman and Mission Specialist Christina Koch will become the first humans to land on the Moon since Apollo 17 in 1972. Congressional appropriations committees expressed concern about cost overruns now estimated at $2.1 billion above the original programme budget.",
+    "category": "Science",
+    "category_label": "NASA & Space Exploration"
+  },
+  {
+    "title": "Google DeepMind's Gemini Ultra 2.0 Achieves Expert-Level Performance Across Scientific Domains",
+    "url": "https://theverge.com/ai/gemini-ultra-2-benchmark-2026",
+    "source_name": "The Verge",
+    "published_at": "2026-09-10T09:00:00Z",
+    "content": "Google DeepMind published results today showing that Gemini Ultra 2.0 achieves expert-level performance across a comprehensive battery of scientific reasoning benchmarks, including a 91.2% score on the GPQA Diamond dataset of graduate-level biology, chemistry, and physics questions — surpassing the average score of domain experts who hold PhDs in the respective fields. The model also demonstrates strong performance on advanced mathematics benchmarks, scoring 87% on the MATH-500 dataset using chain-of-thought reasoning. DeepMind researchers attributed the gains to a novel multi-modal training approach that incorporates structured scientific literature from over 200 million research papers across 47 languages. The model is being made available to select research institutions through Google's AI Academic Research Programme before broader commercial rollout via Google Cloud Vertex AI. Critics note the benchmarks were curated by Google itself, calling for independent third-party evaluation before drawing conclusions about true scientific reasoning capability.",
+    "category": "AI",
+    "category_label": "Artificial Intelligence"
+  },
+  {
+    "title": "Intel Foundry Services Wins $8.5 Billion US Government Contract for Secure Chip Manufacturing",
+    "url": "https://reuters.com/technology/intel-chips-act-contract-2026",
+    "source_name": "Reuters",
+    "published_at": "2026-09-04T14:00:00Z",
+    "content": "Intel Corporation's foundry division announced it has been awarded an $8.5 billion direct funding grant under the US CHIPS and Science Act, the largest single award under the programme, specifically designated for constructing two new leading-edge semiconductor fabrication plants in Ohio and Arizona dedicated to manufacturing defence and intelligence community chips domestically. The Department of Commerce confirmed the award, emphasising that both facilities will be classified as Trusted Foundry assets restricted to US government workloads involving sensitive cryptographic and signals intelligence applications. Intel CEO Pat Gelsinger described the contract as transformational, providing long-term revenue visibility as the company executes its Intel Foundry comeback strategy centred on its 18A process node, which the company claims matches TSMC's 2nm in transistor density. Analysts at Bernstein noted that the guaranteed government revenue stream substantially de-risks Intel's foundry investment thesis and could accelerate external customer onboarding timelines.",
+    "category": "Tech",
+    "category_label": "Semiconductors"
+  },
+  {
+    "title": "US Tech Sector Adds 340,000 Jobs in August as AI Investment Drives Hiring Surge",
+    "url": "https://bloomberg.com/economy/tech-jobs-august-2026",
+    "source_name": "Bloomberg",
+    "published_at": "2026-09-03T17:00:00Z",
+    "content": "The US technology sector added 340,000 jobs in August 2026, far exceeding the consensus economist forecast of 180,000, as accelerating AI infrastructure investment translated into broad-based hiring across data centre operations, cloud engineering, AI model training, and semiconductor manufacturing roles. The Bureau of Labour Statistics report showed the tech unemployment rate falling to 2.1%, the lowest reading since 2019. AI-specialised roles including machine learning engineers, AI safety researchers, and large language model fine-tuning specialists commanded average starting salaries of $185,000 according to LinkedIn's accompanying Workforce Report. Major employers driving the hiring surge included Microsoft, Google, Amazon, Meta, and a cohort of AI infrastructure startups that collectively raised over $40 billion in venture capital in the first half of 2026. Economists cautioned that the strong sectoral data masks weakness in manufacturing and retail employment, and the Fed's ability to cut rates remains constrained by the resulting wage inflation pressures.",
+    "category": "Economy",
+    "category_label": "Technology & Labour Markets"
+  },
+  {
+    "title": "Meta AI Releases Open-Source Llama 4 Model with 400 Billion Parameters",
+    "url": "https://techcrunch.com/ai/meta-llama-4-release-2026",
+    "source_name": "TechCrunch",
+    "published_at": "2026-09-11T12:00:00Z",
+    "content": "Meta AI released Llama 4, its fourth-generation open-source large language model family, featuring a flagship 400 billion parameter Mixture-of-Experts architecture that the company claims achieves state-of-the-art performance on reasoning and code generation benchmarks while running efficiently on a single server rack of Meta's custom MTIA AI accelerator chips. The model is released under Meta's custom research licence permitting commercial use for organisations with fewer than 700 million monthly active users, effectively excluding only the largest competing platforms. The Llama 4 Scout variant at 17 billion active parameters offers performance competitive with GPT-4 class models while fitting within 24GB of GPU VRAM, making it accessible to academic institutions and small startups. Hugging Face reported over 2 million model downloads within the first six hours of release. AI safety researchers noted that Meta has included expanded system prompt hardening and refusal classifiers trained on a new dataset of 4 million adversarial jailbreak attempts.",
+    "category": "AI",
+    "category_label": "Artificial Intelligence"
+  },
+  {
+    "title": "China's CATL Unveils Condensed Battery Tech Claiming 500km Range in 10-Minute Charge",
+    "url": "https://bloomberg.com/energy/catl-battery-500km-2026",
+    "source_name": "Bloomberg",
+    "published_at": "2026-09-02T06:00:00Z",
+    "content": "Contemporary Amperex Technology Co. Limited (CATL), the world's largest electric vehicle battery manufacturer, unveiled its second-generation Condensed Battery technology platform, claiming vehicles equipped with its new cells can achieve 500 kilometres of range from a 10-minute charge using 800V ultra-fast charging infrastructure. The technology uses a novel bio-inspired electrolyte system with adaptive chain-like molecular structures that simultaneously improve ionic conductivity and thermal stability. CATL announced the technology will enter series production for Boeing's commercial aviation electrification programme as well as premium EV applications at BMW and Li Auto beginning in Q3 2027. Energy density is reported at 500 Wh/kg, nearly double existing lithium-ion commercial cell density. Industry analysts at Wood Mackenzie expressed cautious optimism, noting that production scale economics and long-term cycle life data at high charge rates remain to be independently validated before widespread adoption forecasts can be revised.",
+    "category": "Economy",
+    "category_label": "Energy & Technology"
+  },
+  {
+    "title": "Anthropic's Claude 4 Demonstrates Autonomous Multi-Step Research and Coding Capabilities",
+    "url": "https://wired.com/ai/anthropic-claude-4-2026",
+    "source_name": "Wired",
+    "published_at": "2026-09-12T08:30:00Z",
+    "content": "Anthropic released Claude 4 with dramatically enhanced agentic capabilities, demonstrating the model completing complex multi-step software engineering tasks autonomously over extended contexts of up to one million tokens. In a live demonstration, Claude 4 independently read a 400-page codebase, identified a critical security vulnerability, wrote a patch, generated a comprehensive test suite, and submitted a documented pull request — completing the entire workflow in under 12 minutes without human intervention. Anthropic CEO Dario Amodei highlighted the company's Constitutional AI training methodology and extensive interpretability research as the safety foundation enabling the deployment of more capable autonomous agents. The model scores 73% on SWE-Bench Verified, a benchmark measuring autonomous software engineering capability on real GitHub issues, compared to 49% for Claude 3.7. Enterprise customers including Salesforce, Palantir, and the UK NHS AI task force have signed early access agreements. Safety researchers noted that autonomous agents capable of committing code create novel security and accountability challenges requiring new governance frameworks.",
+    "category": "AI",
+    "category_label": "Artificial Intelligence"
+  },
+  {
+    "title": "SpaceX Starship Completes Sixth Test Flight with Successful Booster Catch at Launch Tower",
+    "url": "https://space.com/starship-flight-6-catch-2026",
+    "source_name": "Space.com",
+    "published_at": "2026-09-01T19:00:00Z",
+    "content": "SpaceX successfully completed the sixth integrated Starship test flight, achieving the mission's headline objective of catching the Super Heavy booster using the launch tower's mechanical arms — colloquially called 'Mechazilla' — for the second consecutive time, demonstrating the reliability and repeatability of the innovative propulsive capture system. The Ship upper stage completed its planned partial orbital trajectory, executed a controlled reentry through maximum aerodynamic heating, and performed a precision splashdown in the Indian Ocean within 800 metres of the target coordinates. CEO Elon Musk confirmed via social media that the next flight, targeted for Q1 2027, will attempt a full orbital loop with Ship recovery at the Starbase facility in Boca Chica, Texas. NASA's Artemis programme managers confirmed the flight data will directly inform the human landing system certification timeline. The FAA granted SpaceX a launch licence extension through 2028 following the flight's completion.",
+    "category": "Science",
+    "category_label": "Space Exploration"
+  },
+  {
+    "title": "UK Competition Authority Opens Investigation into Microsoft's AI Partnership with Mistral",
+    "url": "https://theguardian.com/technology/cma-microsoft-mistral-2026",
+    "source_name": "The Guardian",
+    "published_at": "2026-09-09T16:00:00Z",
+    "content": "The UK Competition and Markets Authority (CMA) formally opened a merger investigation into Microsoft's reported $600 million investment and commercial partnership with French AI laboratory Mistral AI, following concerns raised by European AI startups that the arrangement gives Microsoft effective control over a major competitor. The CMA's Phase 1 investigation will examine whether the investment constitutes a relevant merger situation under UK merger control rules, a question that has divided antitrust legal experts given the minority stake structure. Mistral has previously positioned itself as Europe's independent answer to US AI dominance, having released several powerful open-weight models that have become widely adopted across the EU public sector. Microsoft has denied that the partnership grants any control rights or board seats, characterising it purely as a cloud infrastructure reselling arrangement. The European Commission's DG Competition is conducting a parallel assessment. AI governance advocates argue the case highlights regulatory gaps in how traditional merger control frameworks apply to AI industry dynamics involving compute access, data sharing, and model distribution agreements.",
+    "category": "Economy",
+    "category_label": "Tech Regulation & Competition"
+  },
+  {
+    "title": "Global AI Chip Shortage Eases as Samsung HBM3E Memory Production Ramps Up",
+    "url": "https://reuters.com/technology/samsung-hbm3e-production-2026",
+    "source_name": "Reuters",
+    "published_at": "2026-09-08T07:00:00Z",
+    "content": "Samsung Electronics announced it has achieved qualification approval from Nvidia for its HBM3E high-bandwidth memory chips, allowing it to begin shipping to Nvidia's Blackwell GPU production lines starting October 2026. This marks a significant breakthrough after Samsung spent over 18 months working to meet Nvidia's stringent thermal stability and yield requirements. The development provides meaningful supply chain diversification, as SK Hynix had previously been the sole qualified HBM3E supplier to Nvidia. Industry analysts at TrendForce estimate the new supply injection could reduce Blackwell GPU delivery lead times from the current 52-week wait to approximately 28 weeks by Q2 2027. The broader AI chip component shortage that has constrained data centre build-out timelines for hyperscalers globally should ease materially. Investors responded positively, with Samsung shares rising 4.1% in Seoul trading. Micron Technology, the US-based third major memory manufacturer, is expected to achieve Nvidia qualification for its own HBM3E product by December 2026.",
+    "category": "Tech",
+    "category_label": "Semiconductors"
+  },
+  {
+    "title": "IMF Raises Global Growth Forecast to 3.4% Citing AI Productivity Gains Across Economies",
+    "url": "https://ft.com/economy/imf-growth-forecast-2026",
+    "source_name": "Financial Times",
+    "published_at": "2026-09-06T12:00:00Z",
+    "content": "The International Monetary Fund raised its 2026 global economic growth forecast by 0.3 percentage points to 3.4%, citing early evidence of measurable AI-driven productivity improvements across manufacturing, financial services, healthcare, and software development sectors in advanced economies. The IMF's World Economic Outlook update highlighted that US labour productivity growth reached 3.1% annualised in the first half of 2026, the strongest reading since the late 1990s technology boom. Chief Economist Pierre-Olivier Gourinchas attributed a meaningful fraction of the productivity uptick to widespread enterprise adoption of AI coding assistants, document summarisation tools, and automated customer service systems. The IMF cautioned that the productivity gains remain unevenly distributed, with advanced economies benefiting substantially while many developing nations lack the digital infrastructure to participate in the AI productivity dividend. The Fund called for increased multilateral investment in AI capacity building through its new Digital Infrastructure Facility. China's growth forecast was revised slightly downward to 4.6% due to persistent property sector deleveraging.",
+    "category": "Economy",
+    "category_label": "Global Economy & Finance"
+  }
+]

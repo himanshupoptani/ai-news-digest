@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SYNAPSE // Global News Intelligence Engine</title>
+  
+  <!-- D3.js for Graph View -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <!-- SYNAPSE v6.0 Production Stylesheet -->
+  <link rel="stylesheet" href="/static/css/styles.css?v=600" />
+</head>
+<body>
+
+  <!-- Loading State Spinner Overlay -->
+  <div id="syn-spinner" class="hidden">
+    <div style="text-align: center;">
+      <div class="syn-spin-ring"></div>
+      <div style="margin-top: 12px; font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-cyan); letter-spacing: 0.08em; text-transform: uppercase;">
+        Synthesizing Global Wire Telemetry...
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Grid Structure -->
+  <div class="syn-app-layout">
+
+    <!-- 1. LEFT COMMAND SIDEBAR -->
+    <aside class="syn-sidebar">
+      <!-- Brand Box -->
+      <div class="syn-brand-box" onclick="Synapse.nav('radar')">
+        <div class="syn-brand-icon">SY</div>
+        <div>
+          <div class="syn-brand-name">SYNAPSE</div>
+          <div class="syn-brand-badge">Global News Engine</div>
+        </div>
+      </div>
+
+      <!-- Navigation List -->
+      <nav class="syn-nav-list">
+        <div class="syn-nav-group-title">Operations</div>
+        
+        <button class="syn-nav-item active" id="nav-radar" onclick="Synapse.nav('radar')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <span>Live Radar</span>
+          <span class="syn-counter-pill" id="badge-dispatches-count">0</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-search" onclick="Synapse.nav('search')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span>Global Search</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-dossier" onclick="Synapse.nav('dossier')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>AI Dossier</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-chat" onclick="Synapse.nav('chat')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          <span>Research AI</span>
+        </button>
+
+        <div class="syn-nav-group-title">Deep Intel</div>
+
+        <button class="syn-nav-item" id="nav-graph" onclick="Synapse.nav('graph')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Knowledge Graph</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-timeline" onclick="Synapse.nav('timeline')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Chronology</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-saved" onclick="Synapse.nav('saved')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+          <span>Saved Articles</span>
+          <span class="syn-counter-pill" id="badge-saved-count">0</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Status Telemetry -->
+      <div class="syn-sidebar-foot">
+        <div class="syn-system-indicator">
+          <div><span class="syn-radar-beacon"></span>SAT-LINK ACTIVE</div>
+          <div style="color: var(--syn-cyan);">99.9%</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. STAGE CANVAS -->
+    <main class="syn-stage">
+
+      <!-- Top Omnibar Command Header -->
+      <header class="syn-topbar">
+        <div class="syn-omni-wrap">
+          <svg class="syn-omni-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="global-omnibar" class="syn-omni-input" placeholder="Search any country, topic, politician, startup, or conflict globally..." />
+          <span class="syn-omni-badge">ENTER</span>
+        </div>
+
+        <div class="syn-topbar-actions">
+          <div class="syn-telemetry-chip">
+            <span style="color: var(--syn-emerald);">●</span>
+            <span id="telemetry-outlets-label">Multi-Wire Sync</span>
+          </div>
+
+          <button class="syn-btn-icon" title="Refresh Live Data" onclick="Synapse.refreshAll()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Fast Stream Ticker Bar -->
+      <div class="syn-ticker">
+        <div class="syn-ticker-tag">LIVE DISPATCH</div>
+        <div class="syn-ticker-track">
+          <div id="ticker-feed-track" class="syn-ticker-items">
+            <span class="syn-ticker-item">Continuous global news intelligence active across 100+ nations...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Canvas Switcher -->
+      <div class="syn-canvas">
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: RADAR (LIVE FEED)
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-radar" class="syn-view-panel active">
+          
+          <!-- Category Quick Bar -->
+          <div class="syn-filter-strip">
+            <button class="syn-chip active" onclick="Synapse.setCategory('all')">ALL INTEL</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('world')">WORLD</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('tech')">TECHNOLOGY</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('ai')">ARTIFICIAL INTEL</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('business')">MARKETS</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('science')">SCIENCE</button>
+            <button class="syn-chip" onclick="Synapse.search('Climate')">CLIMATE</button>
+            <button class="syn-chip" onclick="Synapse.search('Geopolitics')">GEOPOLITICS</button>
+          </div>
+
+          <!-- Spotlight & Mini Stream Row -->
+          <div class="syn-spotlight-row">
+            
+            <!-- Spotlight Card -->
+            <div class="syn-spotlight-card" id="spotlight-box" onclick="Synapse.openSpotlight()">
+              <img id="spotlight-img" class="syn-spotlight-img" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80" alt="spotlight" />
+              <div class="syn-spotlight-overlay"></div>
+              <div class="syn-spotlight-body">
+                <span class="syn-tag syn-tag-rose" id="spotlight-tag">PRIORITY BRIEF</span>
+                <h1 class="syn-spotlight-headline" id="spotlight-title">Loading Global Dispatches...</h1>
+                <p class="syn-spotlight-summary" id="spotlight-desc"></p>
+                <div class="syn-spotlight-meta">
+                  <span id="spotlight-source" style="color: var(--syn-cyan); font-weight: 700;">Verified Wire</span>
+                  <span>•</span>
+                  <span id="spotlight-time">Just Now</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Side Stream Feed Box -->
+            <div class="syn-intercept-panel">
+              <div class="syn-panel-header">
+                <span>INTERCEPT FEED</span>
+                <span style="color: var(--syn-cyan); font-size: 10px;">REAL-TIME</span>
+              </div>
+              <div id="stream-scroll-list" class="syn-intercept-list">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Dispatches Matrix Header -->
+          <div style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-family: var(--syn-font-head); font-size: 17px; font-weight: 700; color: var(--syn-text-head);">
+              Verified Global Dispatches
+            </div>
+            <div style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-text-dim);" id="dispatches-status-label">
+              Streaming live dispatches
+            </div>
+          </div>
+
+          <!-- Articles Matrix Grid -->
+          <div id="radar-matrix-grid" class="syn-card-matrix">
+            <!-- Injected via JS -->
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: SEARCH
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-search" class="syn-view-panel">
+          <div class="syn-search-container">
+            <div class="syn-search-hero">
+              <h1>Universal Multi-Source Search</h1>
+              <p style="color: var(--syn-text-sec); font-size: 13.5px;">Search across 100+ countries, national broadcasters, and independent publications.</p>
+            </div>
+
+            <div class="syn-search-input-row">
+              <input type="text" id="search-view-input" placeholder="Search any country, event, person, or local incident..." />
+              <button class="syn-btn-primary" onclick="Synapse.execSearch()">Run Inquiry</button>
+            </div>
+
+            <div class="syn-geo-pills">
+              <button class="syn-chip" onclick="Synapse.search('latest news in Nepal')">🇳🇵 Nepal</button>
+              <button class="syn-chip" onclick="Synapse.search('Mongolia news today')">🇲🇳 Mongolia</button>
+              <button class="syn-chip" onclick="Synapse.search('Kenya developments')">🇰🇪 Kenya</button>
+              <button class="syn-chip" onclick="Synapse.search('Greenland news')">🇬🇱 Greenland</button>
+              <button class="syn-chip" onclick="Synapse.search('Bhutan latest news')">🇧🇹 Bhutan</button>
+              <button class="syn-chip" onclick="Synapse.search('South America tech')">🌎 South America</button>
+              <button class="syn-chip" onclick="Synapse.search('Antarctica research')">🇦🇶 Antarctica</button>
+            </div>
+
+            <!-- Geographic Coverage Telemetry Layer Banner -->
+            <div id="search-coverage-card" style="display: none;"></div>
+
+            <!-- Search Results Matrix -->
+            <div id="search-matrix-grid" class="syn-card-matrix">
+              <div style="grid-column: 1/-1; text-align: center; padding: 60px 0; color: var(--syn-text-dim);">
+                Enter a query above to initiate multi-source worldwide discovery.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: AI DOSSIER
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-dossier" class="syn-view-panel">
+          <div class="syn-dossier-frame">
+            <div style="margin-bottom: 20px;">
+              <h1 style="font-family: var(--syn-font-head); font-size: 26px; font-weight: 800; color: #fff;">AI Intelligence Dossier</h1>
+              <p style="color: var(--syn-text-sec); font-size: 13px; margin-top: 4px;">Automated multi-source corroboration, key point synthesis, and bias assessment.</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+              <input type="text" id="dossier-topic-input" class="syn-omni-input" style="height: 42px; font-size: 13.5px;" placeholder="Topic for dossier (e.g. OpenAI GPT-5, Global Semiconductor Supply Chain, Federal Reserve)..." />
+              <button class="syn-btn-primary" onclick="Synapse.execDossier()">✦ Synthesize</button>
+            </div>
+
+            <div id="dossier-result-board" class="syn-dossier-board">
+              <div style="text-align: center; padding: 60px 0; color: var(--syn-text-dim);">
+                Enter any topic above to generate a synthesized intelligence briefing with full source grounding.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: CHAT
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-chat" class="syn-view-panel">
+          <div class="syn-chat-shell">
+            <div class="syn-panel-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="syn-radar-beacon"></span>
+                <span style="font-weight: 700; font-family: var(--syn-font-head);">Conversational News AI Analyst</span>
+              </div>
+              <button class="syn-chip" onclick="Synapse.resetChat()">New Session</button>
+            </div>
+
+            <div class="syn-chat-stream" id="chat-messages-log">
+              <!-- Messages stream here -->
+            </div>
+
+            <div class="syn-chat-input-row">
+              <textarea id="chat-textarea" placeholder="Ask any question about breaking events, geopolitical conflicts, or technologies..."></textarea>
+              <button class="syn-btn-primary" style="height: 38px;" onclick="Synapse.sendChatMessage()">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: KNOWLEDGE GRAPH
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-graph" class="syn-view-panel">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <div>
+              <h2 style="font-family: var(--syn-font-head); font-size: 18px; font-weight: 700; color: #fff;">Entity Relationship Graph</h2>
+              <p style="color: var(--syn-text-sec); font-size: 11.5px;">Visual cluster linking topics, publishers, and verified articles.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="graph-topic-input" class="syn-omni-input" style="width: 200px; height: 32px;" placeholder="Filter topic..." />
+              <button class="syn-btn-primary" style="height: 32px; padding: 0 14px;" onclick="Synapse.renderGraph()">Map</button>
+            </div>
+          </div>
+          <div class="syn-graph-frame">
+            <svg id="syn-d3-svg" style="width: 100%; height: 100%;"></svg>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: TIMELINE
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-timeline" class="syn-view-panel">
+          <div style="max-width: 760px; margin: 0 auto;">
+            <div style="margin-bottom: 20px;">
+              <h2 style="font-family: var(--syn-font-head); font-size: 22px; font-weight: 800; color: #fff;">Event Chronology</h2>
+              <p style="color: var(--syn-text-sec); font-size: 12.5px;">Historical sequence of milestones and developing developments.</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+              <input type="text" id="timeline-query-input" class="syn-omni-input" style="height: 40px;" placeholder="Event or topic (e.g. Artificial Intelligence, Climate Summit)..." />
+              <button class="syn-btn-primary" onclick="Synapse.renderTimeline()">Build Chronology</button>
+            </div>
+
+            <div id="timeline-flow-list" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Chronology nodes injected here -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: SAVED ARTICLES
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-saved" class="syn-view-panel">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+            <div>
+              <h2 style="font-family: var(--syn-font-head); font-size: 20px; font-weight: 800; color: #fff;">Saved Intelligence Dispatches</h2>
+              <p style="color: var(--syn-text-sec); font-size: 12px;">Articles stored offline in your private command cache.</p>
+            </div>
+            <button class="syn-chip" style="color: var(--syn-rose);" onclick="Synapse.clearSaved()">Clear Cache</button>
+          </div>
+          <div id="saved-matrix-grid" class="syn-card-matrix">
+            <!-- Saved cards injected here -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ARTICLE DETAIL MODAL DIALOG -->
+  <div id="syn-article-modal" class="syn-modal-backdrop hidden">
+    <div class="syn-modal-box">
+      <div class="syn-modal-head">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="syn-tag syn-tag-cyan" id="modal-tag-badge">WORLD</span>
+          <span id="modal-source-label" style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-text-dim);">Newswire</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="syn-chip" onclick="Synapse.toggleAudioModal()">
+            <span id="modal-audio-btn-txt">🔊 Listen</span>
+          </button>
+          <button class="syn-chip" onclick="Synapse.saveModalArticle()">
+            <span id="modal-save-btn-txt">⭐ Save</span>
+          </button>
+          <button class="syn-chip" style="padding: 4px 10px;" onclick="Synapse.closeModal()">✕</button>
+        </div>
+      </div>
+
+      <div class="syn-modal-body">
+        <h1 class="syn-modal-title" id="modal-title-text">Article Headline</h1>
+        <div style="display: flex; gap: 10px; font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-text-dim); margin-bottom: 14px;">
+          <span id="modal-author-text">Editorial Staff</span>
+          <span>•</span>
+          <span id="modal-time-text">Just now</span>
+        </div>
+
+        <div id="modal-body-text" style="font-size: 14px; line-height: 1.65; color: var(--syn-text-sec);">
+          Content loading...
+        </div>
+      </div>
+
+      <div class="syn-modal-foot">
+        <button class="syn-btn-primary" style="height: 34px; padding: 0 14px;" onclick="Synapse.dossierFromModal()">✦ Generate AI Dossier</button>
+        <a id="modal-external-link" href="#" target="_blank" style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-cyan); text-decoration: none;">Publisher Link ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unified API & Master Controller Scripts -->
+  <script src="/static/js/api.js?v=600"></script>
+  <script src="/static/js/app.js?v=600"></script>
+</body>
+</html>

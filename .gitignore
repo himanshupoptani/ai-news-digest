@@ -15,7 +15,7 @@ ENV/
 .env
 .env.local
 
-# Databases
+# Databases (don't commit SQLite DB — Railway will create fresh on deploy)
 *.db
 *.sqlite3
 *.sqlite
