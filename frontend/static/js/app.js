@@ -313,12 +313,20 @@ function stopAudioBriefing() {
 // ============================================================
 // LIVE NEWS SEARCH TAB
 // ============================================================
+function quickSearch(query) {
+  const input = document.getElementById("search-input");
+  if (input) {
+    input.value = query;
+    executeSearch();
+  }
+}
+
 async function executeSearch() {
   const query = document.getElementById("search-input")?.value?.trim();
   if (!query) return;
   try {
     setLoading(true);
-    const res = await Api.searchNews(query, 12, State.appMode);
+    const res = await Api.searchNews(query, 16, State.appMode);
     renderSearchResults(res);
   } catch (e) {
     showError("Search failed: " + e.message);
@@ -329,10 +337,80 @@ async function executeSearch() {
 
 function renderSearchResults(res) {
   const el = document.getElementById("search-results");
+  const bannerEl = document.getElementById("search-coverage-banner");
+  const eventsEl = document.getElementById("search-events-container");
   if (!el) return;
+
   const articles = res.articles || [];
+  const coverage = res.coverage || {};
+  const events = res.events || [];
+
+  // 1. Render Geographic Coverage Telemetry Banner
+  if (bannerEl) {
+    const geoTitle = coverage.detected_country 
+      ? `${coverage.detected_country.toUpperCase()} (${coverage.detected_region || "World"})`
+      : (coverage.detected_region || "Worldwide Open Wire");
+    const langs = (coverage.languages_searched || ["en"]).join(", ").toUpperCase();
+    const providers = (coverage.providers_used || ["Google News RSS", "GDELT"]).join(" · ");
+    const sourcesCount = (coverage.sources_retrieved || []).length || articles.length;
+
+    bannerEl.className = "glass-card rounded-2xl p-4 border border-blue-500/30 bg-blue-950/20";
+    bannerEl.innerHTML = `
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <div>
+            <div class="text-[10px] uppercase font-bold tracking-wider text-blue-400 font-mono">Geographic Coverage Layer Active</div>
+            <div class="text-sm font-bold text-white mt-0.5">${geoTitle}</div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono text-slate-300">
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700/80">Languages: <strong class="text-white">${langs}</strong></span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700/80">Outlets: <strong class="text-emerald-400">${sourcesCount}</strong></span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700/80">Providers: <strong class="text-blue-300">${providers}</strong></span>
+        </div>
+      </div>
+    `;
+    bannerEl.classList.remove("hidden");
+  }
+
+  // 2. Render Corroborated Event Clusters / Developing Stories
+  if (eventsEl) {
+    const developingEvents = events.filter(e => e.source_count >= 2 || e.is_developing);
+    if (developingEvents.length > 0) {
+      eventsEl.innerHTML = `
+        <div class="flex items-center justify-between pt-1">
+          <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Cross-Corroborated Event Clusters (${developingEvents.length} Developing Stories)
+          </h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          ${developingEvents.slice(0, 4).map(ev => `
+            <div class="glass-card rounded-xl p-4 border border-emerald-500/30 bg-emerald-950/10 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
+                  🚨 ${ev.source_count} Independent Sources
+                </span>
+                <span class="text-[10px] text-slate-400 font-mono">Score: ${ev.coverage_score}</span>
+              </div>
+              <h4 class="text-xs font-bold text-white leading-snug line-clamp-2">${ev.headline}</h4>
+              <div class="flex flex-wrap gap-1 text-[10px] text-slate-400 font-mono pt-1">
+                ${ev.sources.slice(0, 4).map(s => `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60">${s}</span>`).join("")}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      eventsEl.classList.remove("hidden");
+    } else {
+      eventsEl.classList.add("hidden");
+    }
+  }
+
+  // 3. Render Individual Dispatches
   if (!articles.length) {
-    el.innerHTML = `<div class="glass-card rounded-2xl p-12 text-center text-slate-500 text-sm col-span-full">No articles found matching this query.</div>`;
+    el.innerHTML = `<div class="glass-card rounded-2xl p-12 text-center text-slate-500 text-sm col-span-full">No articles found matching this query. Try a broader topic or different region.</div>`;
     return;
   }
   State.cachedHeadlines = articles;
@@ -341,7 +419,10 @@ function renderSearchResults(res) {
     <div class="glass-card glass-card-hover rounded-2xl p-5 border border-slate-800 transition cursor-pointer flex flex-col justify-between space-y-3" onclick="openArticleModalById(${idx})">
       <div>
         <div class="flex items-center justify-between gap-2 mb-2">
-          <span class="text-xs font-semibold text-blue-400">${a.source_name || "Source"}</span>
+          <span class="text-xs font-semibold text-blue-400 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            ${a.source_name || "Newswire"}
+          </span>
           <span class="text-[11px] text-slate-500 font-mono">${formatTimeAgo(a.published_at)}</span>
         </div>
         <h3 class="font-bold text-white text-sm leading-snug line-clamp-2">${a.title}</h3>
@@ -349,8 +430,10 @@ function renderSearchResults(res) {
       </div>
 
       <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-        ${sentimentBadge(a.intelligence?.sentiment)}
-        <span class="text-blue-400 font-semibold">Inspect Story →</span>
+        <div class="flex items-center gap-1.5">
+          ${sentimentBadge(a.intelligence?.sentiment)}
+        </div>
+        <span class="text-blue-400 font-semibold flex items-center gap-1">Inspect Story →</span>
       </div>
     </div>
   `).join("");

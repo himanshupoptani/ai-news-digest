@@ -266,18 +266,39 @@
 
           <div class="flex gap-3">
             <div class="relative flex-1">
-              <input id="search-input" type="text" placeholder="Search any topic, company or story — e.g. Apple earnings, Tesla, OpenAI, TSMC, Gaganyaan..."
+              <input id="search-input" type="text" placeholder="Search any topic, country, city or story — e.g. 'latest news in Nepal', 'Tokyo tech', 'Mongolia today', 'Iceland'..."
                 class="w-full bg-slate-900/80 border border-slate-700/80 rounded-2xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner" />
               <svg class="w-4 h-4 text-slate-500 absolute left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
             <button onclick="executeSearch()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-2xl transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
-              Search
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              Global Search
             </button>
           </div>
 
+          <!-- Quick Global Telemetry Search Chips -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+            <span class="text-[10px] uppercase font-bold text-slate-500 font-mono flex-shrink-0">Worldwide Queries:</span>
+            <button onclick="quickSearch('latest news in Nepal')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇳🇵 Nepal</button>
+            <button onclick="quickSearch('what is happening in Mongolia')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇲🇳 Mongolia</button>
+            <button onclick="quickSearch('latest news from Japan')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇯🇵 Japan</button>
+            <button onclick="quickSearch('latest news in Kenya')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇰🇪 Kenya</button>
+            <button onclick="quickSearch('latest news in Iceland')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇮🇸 Iceland</button>
+            <button onclick="quickSearch('latest news in Brazil')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇧🇷 Brazil</button>
+            <button onclick="quickSearch('news from Greenland')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇬🇱 Greenland</button>
+            <button onclick="quickSearch('what happened in Antarctica today')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🇦🇶 Antarctica</button>
+            <button onclick="quickSearch('latest Southeast Asia technology news')" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 whitespace-nowrap transition">🌏 Southeast Asia</button>
+          </div>
+
+          <!-- Dynamic Geographic Coverage Intelligence Banner -->
+          <div id="search-coverage-banner" class="hidden"></div>
+
+          <!-- Developing Stories / Event Clusters -->
+          <div id="search-events-container" class="hidden space-y-3"></div>
+
           <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="glass-card rounded-2xl p-12 text-center text-slate-500 text-sm col-span-full">
-              Enter any search query above to fetch and analyze live articles from worldwide wire networks.
+              Enter any query above to search worldwide across international, national, regional, and local news sources.
             </div>
           </div>
         </div>
@@ -428,8 +449,8 @@
   </div><!-- /layout -->
 
   <!-- Application Scripts -->
-  <script src="/static/js/api.js"></script>
-  <script src="/static/js/app.js"></script>
+  <script src="/static/js/api.js?v=12"></script>
+  <script src="/static/js/app.js?v=12"></script>
 
 </body>
 </html>

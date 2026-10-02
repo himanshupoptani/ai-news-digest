@@ -30,7 +30,9 @@ def search_news(request: NewsSearchRequest):
         query=request.query,
         mode_used=raw_response.mode_used,
         total_found=len(final_selected),
-        articles=final_selected
+        articles=final_selected,
+        coverage=raw_response.coverage,
+        events=raw_response.events
     )
 
 @router.get("/headlines")
