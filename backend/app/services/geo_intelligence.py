@@ -345,18 +345,22 @@ class GeoIntelligenceEngine:
         import urllib.parse
         urls = []
 
-        SUPPORTED_GL = {
-            "US", "GB", "IN", "AU", "CA", "DE", "FR", "JP", "BR", "IT", "ES", "MX",
-            "ID", "KR", "ZA", "RU", "NL", "TR", "PL", "SA", "SE", "CH", "AR", "NG",
-            "EG", "SG", "MY", "PH", "TH", "NZ", "IE", "IL", "PK", "BD", "KE", "AE"
-        }
-        effective_gl = ctx.gl if ctx.gl in SUPPORTED_GL else "US"
+        gl = ctx.gl
+        hl = ctx.hl
 
+        # Primary: search RSS with country targeting
         q_encoded = urllib.parse.quote(base_query)
         urls.append(
-            f"https://news.google.com/rss/search?q={q_encoded}&hl=en&gl={effective_gl}&ceid={effective_gl}:en"
+            f"https://news.google.com/rss/search?q={q_encoded}&hl=en&gl={gl}&ceid={gl}:en"
         )
-        return urls[:1]
+
+        # Secondary: English global fallback
+        if gl != "US":
+            urls.append(
+                f"https://news.google.com/rss/search?q={q_encoded}&hl=en&gl=US&ceid=US:en"
+            )
+
+        return urls[:2]
 
 
 # Singleton

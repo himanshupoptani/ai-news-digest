@@ -172,27 +172,27 @@ class GlobalNewsEngine:
                     logger.warning(f"NewsAPI failed: {e}")
                     providers_failed.append("NewsAPI")
 
-        # ── Step 5: Regional RSS (fallback only when articles < 2) ───────────
-        if len(articles) < 2:
-            region_feeds = self._get_regional_feeds(ctx)[:3]
-            rss_arts = self._fetch_feeds(region_feeds, query, limit=6)
+        # ── Step 5: Regional RSS (based on detected region) ───────────────────
+        if len(articles) < 8:
+            region_feeds = self._get_regional_feeds(ctx)
+            rss_arts = self._fetch_feeds(region_feeds, query, limit=12)
             if rss_arts:
                 articles.extend(rss_arts)
                 providers_used.append("Regional RSS")
 
-        # ── Step 6: Expanded query variants (only when articles == 0) ────────
-        if len(articles) == 0 and len(ctx.expanded_queries) > 1:
-            eq = ctx.expanded_queries[1]
-            try:
-                q_enc = urllib.parse.quote(eq)
-                gl = ctx.gl
-                url = f"https://news.google.com/rss/search?q={q_enc}&hl=en&gl={gl}&ceid={gl}:en"
-                extra = self._fetch_google_rss(url, limit=8)
-                articles.extend(extra)
-                if extra:
-                    providers_used.append(f"Google News ({eq[:25]})")
-            except Exception as e:
-                logger.warning(f"Expanded query RSS failed: {e}")
+        # ── Step 6: Expanded query variants (Google News) ─────────────────────
+        if len(articles) < 6 and len(ctx.expanded_queries) > 1:
+            for eq in ctx.expanded_queries[1:3]:
+                try:
+                    q_enc = urllib.parse.quote(eq)
+                    gl, hl = ctx.gl, ctx.hl
+                    url = f"https://news.google.com/rss/search?q={q_enc}&hl={hl}&gl={gl}&ceid={gl}:{hl[:2]}"
+                    extra = self._fetch_google_rss(url, limit=8)
+                    articles.extend(extra)
+                    if extra:
+                        providers_used.append(f"Google News (expanded: {eq[:30]})")
+                except Exception as e:
+                    logger.warning(f"Expanded query RSS failed: {e}")
 
         # ── Step 7: Deduplicate + Sort by date ────────────────────────────────
         unique = self._deduplicate(articles)

@@ -46,6 +46,9 @@ const Api = {
   sendChatMessage(message, session_id = null) {
     return this.post("/api/chat/message", { message, session_id });
   },
+  getChatSuggestions() {
+    return this.get("/api/chat/suggest");
+  },
   getChatSessions() {
     return this.get("/api/chat/sessions");
   },
