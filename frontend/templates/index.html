@@ -3,692 +3,379 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI News Digest · Global Editorial Intelligence</title>
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              DEFAULT: '#1769E0',
-              dark: '#0F4FA8',
-              light: '#EEF4FD',
-            },
-            editorial: {
-              outer: '#202020',
-              text: '#111318',
-              secondary: '#5A626E',
-              muted: '#8C93A0',
-              border: '#E2E5E9',
-              light: '#F8FAFC'
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Google Fonts: Inter & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-  <!-- D3.js CDN for Knowledge Graph -->
+  <title>SYNAPSE // Global News Intelligence Engine</title>
+  
+  <!-- D3.js for Graph View -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
 
-  <!-- Custom Publication Stylesheet -->
-  <link rel="stylesheet" href="/static/css/styles.css" />
+  <!-- SYNAPSE v6.0 Production Stylesheet -->
+  <link rel="stylesheet" href="/static/css/styles.css?v=600" />
 </head>
+<body>
 
-<body class="bg-[#202020] min-h-screen py-0 md:py-6 px-0 md:px-4 antialiased selection:bg-[#1769E0] selection:text-white font-sans">
-
-  <!-- =========================================================================
-       GLOBAL LOADING OVERLAY
-       ========================================================================= -->
-  <div id="global-spinner" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-    <div class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center gap-3 border border-slate-200 text-center">
-      <div class="w-8 h-8 border-3 border-[#1769E0] border-t-transparent rounded-full animate-spin"></div>
-      <div>
-        <div class="text-xs font-bold text-[#111318] uppercase tracking-wider font-mono-data">Syncing Global Wire</div>
-        <div class="text-[11px] text-slate-500 mt-0.5">Retrieving real-time verified dispatches...</div>
+  <!-- Loading State Spinner Overlay -->
+  <div id="syn-spinner" class="hidden">
+    <div style="text-align: center;">
+      <div class="syn-spin-ring"></div>
+      <div style="margin-top: 12px; font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-cyan); letter-spacing: 0.08em; text-transform: uppercase;">
+        Synthesizing Global Wire Telemetry...
       </div>
     </div>
   </div>
 
-  <!-- Error Toast -->
-  <div id="error-toast" class="hidden fixed bottom-6 right-6 z-50 bg-[#111318] text-white text-xs px-5 py-3 rounded-lg shadow-2xl max-w-md border border-rose-500/50 font-mono-data"></div>
+  <!-- Master Grid Structure -->
+  <div class="syn-app-layout">
 
-  <!-- =========================================================================
-       ARTICLE READER & STORY INTELLIGENCE MODAL
-       ========================================================================= -->
-  <div id="article-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl border border-slate-200 max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
-      
-      <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-        <div class="flex items-center gap-2">
-          <span id="modal-category-badge" class="tag-pill">World</span>
-          <span id="modal-source-badge" class="px-2.5 py-0.5 rounded text-[11px] font-mono-data bg-white text-slate-600 border border-slate-200">Newswire</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="modal-audio-btn" onclick="toggleAudioBriefing()" class="px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-700 text-xs font-semibold flex items-center gap-1.5 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-            <span id="audio-btn-text">Audio Briefing</span>
-          </button>
-          <button id="modal-save-btn" onclick="toggleSaveCurrentArticle()" class="px-3 py-1.5 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
-            <span id="modal-save-icon">★</span>
-            <span id="modal-save-text">Save</span>
-          </button>
-          <button onclick="closeArticleModal()" class="w-8 h-8 rounded hover:bg-slate-200 text-slate-500 hover:text-black flex items-center justify-center transition">✕</button>
+    <!-- 1. LEFT COMMAND SIDEBAR -->
+    <aside class="syn-sidebar">
+      <!-- Brand Box -->
+      <div class="syn-brand-box" onclick="Synapse.nav('radar')">
+        <div class="syn-brand-icon">SY</div>
+        <div>
+          <div class="syn-brand-name">SYNAPSE</div>
+          <div class="syn-brand-badge">Global News Engine</div>
         </div>
       </div>
 
-      <!-- Modal Body -->
-      <div class="p-6 overflow-y-auto space-y-4 text-slate-800">
-        <h2 id="modal-title" class="text-2xl font-black text-[#111318] leading-tight">Article Headline</h2>
-        <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-mono-data">
-          <span id="modal-author" class="font-semibold text-slate-700">Editorial Staff</span>
-          <span>•</span>
-          <span id="modal-published-at">Just now</span>
-          <span>•</span>
-          <span id="modal-reading-time">3 min read</span>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y border-slate-200 bg-slate-50/50 p-3 rounded-lg">
-          <div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 font-mono-data">Sentiment</div>
-            <div id="modal-sentiment" class="text-xs font-bold text-emerald-600 mt-0.5">Neutral</div>
-          </div>
-          <div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 font-mono-data">Impact Rating</div>
-            <div id="modal-impact" class="text-xs font-bold text-[#1769E0] mt-0.5">Standard Priority</div>
-          </div>
-          <div class="col-span-2">
-            <div class="text-[10px] uppercase font-bold text-slate-400 font-mono-data">Entities Detected</div>
-            <div id="modal-entities" class="flex flex-wrap gap-1 mt-0.5"></div>
-          </div>
-        </div>
-
-        <div id="modal-body" class="text-sm md:text-base leading-relaxed text-slate-700 space-y-3"></div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-        <button id="modal-deep-digest-btn" class="px-4 py-2 rounded bg-[#1769E0] hover:bg-[#0F4FA8] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-          ✦ Generate AI Intelligence Dossier
-        </button>
-        <a id="modal-external-link" href="#" target="_blank" class="text-xs text-[#1769E0] hover:underline font-semibold font-mono-data">
-          Read Original Article ↗
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       CENTERED NEWS PUBLICATION CONTAINER (WHITE CANVAS)
-       ========================================================================= -->
-  <div class="max-w-[1300px] mx-auto bg-white rounded-none md:rounded-2xl shadow-2xl overflow-hidden publication-canvas text-[#111318] transition-all">
-
-    <!-- 1. VERY TOP INFORMATION UTILITY BAR -->
-    <div class="h-8 border-b border-[#E2E5E9] bg-white px-4 md:px-6 flex items-center justify-between text-[11px] text-[#5A626E]">
-      
-      <!-- Left: Date with Live Indicator -->
-      <div class="flex items-center gap-2 font-medium">
-        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-        <span id="current-date-str">Tuesday, October 2, 2026</span>
-      </div>
-
-      <!-- Center: Trending Ticker -->
-      <div class="hidden sm:flex items-center gap-2 overflow-hidden max-w-md">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-rose-600 font-mono-data flex-shrink-0">TRENDING:</span>
-        <span id="top-trending-ticker" class="truncate text-slate-700 font-medium cursor-pointer hover:text-[#1769E0]" onclick="quickSearch('Global Markets')">
-          Major market developments and technology breakthroughs breaking worldwide
-        </span>
-      </div>
-
-      <!-- Right: Social & Quick Utility Links -->
-      <div class="flex items-center gap-3">
-        <div class="hidden md:flex items-center gap-2 text-slate-400">
-          <span class="hover:text-slate-600 cursor-pointer font-bold">f</span>
-          <span class="hover:text-slate-600 cursor-pointer font-bold">𝕏</span>
-          <span class="hover:text-slate-600 cursor-pointer font-bold">📷</span>
-          <span class="hover:text-slate-600 cursor-pointer font-bold">▶</span>
-        </div>
-        <div class="h-3 w-px bg-slate-200 hidden md:block"></div>
-        <button onclick="switchTab('saved')" class="hover:text-[#1769E0] font-medium flex items-center gap-1">
-          <span>Saved</span>
-          <span id="nav-saved-badge" class="px-1.5 py-0.2 rounded-full text-[9px] bg-slate-100 border border-slate-200 text-slate-600 font-mono-data">0</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 2. MAIN HEADER (BRAND + SEARCH BAR + PROFILE) -->
-    <header class="px-4 md:px-6 py-3.5 border-b border-[#E2E5E9] flex items-center justify-between gap-4 bg-white">
-      
-      <!-- Left: Brand Logo -->
-      <a href="javascript:void(0)" onclick="switchTab('home')" class="flex items-center gap-2.5 flex-shrink-0 group">
-        <div class="w-8 h-8 rounded-full bg-[#1769E0] flex items-center justify-center text-white font-mono-data font-black text-sm shadow-sm group-hover:scale-105 transition">
-          AI
-        </div>
-        <div class="flex flex-col">
-          <span class="text-lg md:text-xl font-black tracking-tight text-[#111318] leading-none">AI NEWS DIGEST</span>
-          <span class="text-[9px] text-[#5A626E] font-mono-data tracking-widest uppercase mt-0.5">Global Newsroom</span>
-        </div>
-      </a>
-
-      <!-- Center: Prominent News Search Field -->
-      <div class="flex-1 max-w-xl relative">
-        <input id="main-search-input" type="text"
-          placeholder="Search anything happening anywhere in the world..."
-          class="main-search-input w-full rounded-full pl-4 pr-10 py-2 text-xs md:text-sm text-[#111318] placeholder-slate-400 focus:outline-none"
-          onkeydown="if(event.key==='Enter') executeTopSearch();" />
-        <button onclick="executeTopSearch()" class="absolute right-3 top-2 text-slate-400 hover:text-[#1769E0] transition" title="Search">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        </button>
-      </div>
-
-      <!-- Right: Subscribe Pill / Live Telemetry & Profile -->
-      <div class="flex items-center gap-3 flex-shrink-0">
-        <button onclick="switchTab('digest')" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EEF4FD] hover:bg-[#DCE9FC] border border-[#D0E1FB] text-[#1769E0] text-xs font-bold transition">
-          <span class="text-xs">✦</span>
-          <span>AI Digest</span>
+      <!-- Navigation List -->
+      <nav class="syn-nav-list">
+        <div class="syn-nav-group-title">Operations</div>
+        
+        <button class="syn-nav-item active" id="nav-radar" onclick="Synapse.nav('radar')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <span>Live Radar</span>
+          <span class="syn-counter-pill" id="badge-dispatches-count">0</span>
         </button>
 
-        <button onclick="switchTab('chat')" class="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+        <button class="syn-nav-item" id="nav-search" onclick="Synapse.nav('search')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span>Global Search</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-dossier" onclick="Synapse.nav('dossier')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>AI Dossier</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-chat" onclick="Synapse.nav('chat')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
           <span>Research AI</span>
         </button>
 
-        <div class="w-7 h-7 rounded-full bg-[#111318] text-white flex items-center justify-center text-xs font-bold cursor-pointer" title="User Account">
-          U
-        </div>
-      </div>
-    </header>
+        <div class="syn-nav-group-title">Deep Intel</div>
 
-    <!-- 3. PRIMARY CATEGORY NAVIGATION -->
-    <nav class="border-b border-[#E2E5E9] bg-white px-2 md:px-6 flex items-center justify-between overflow-x-auto text-xs font-bold">
-      <div class="flex items-center">
-        <!-- Hamburger Menu Button -->
-        <button onclick="switchTab('home')" class="p-2 mr-1 text-slate-600 hover:text-black" title="Categories">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <button class="syn-nav-item" id="nav-graph" onclick="Synapse.nav('graph')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Knowledge Graph</span>
         </button>
 
-        <!-- Category Links -->
-        <button onclick="setHeadlinesCategory('all')" id="cat-all" class="cat-nav-link active">HOME</button>
-        <button onclick="setHeadlinesCategory('world')" id="cat-world" class="cat-nav-link">WORLD</button>
-        <button onclick="setHeadlinesCategory('india')" id="cat-india" class="cat-nav-link">INDIA</button>
-        <button onclick="setHeadlinesCategory('business')" id="cat-business" class="cat-nav-link">BUSINESS</button>
-        <button onclick="setHeadlinesCategory('tech')" id="cat-tech" class="cat-nav-link">TECH</button>
-        <button onclick="setHeadlinesCategory('ai')" id="cat-ai" class="cat-nav-link">AI</button>
-        <button onclick="setHeadlinesCategory('science')" id="cat-science" class="cat-nav-link">SCIENCE</button>
-        <button onclick="quickSearch('Sports')" class="cat-nav-link">SPORTS</button>
-        <button onclick="quickSearch('Climate')" class="cat-nav-link">CLIMATE</button>
-        <button onclick="switchTab('worldmap')" class="cat-nav-link text-emerald-600">MAP</button>
+        <button class="syn-nav-item" id="nav-timeline" onclick="Synapse.nav('timeline')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Chronology</span>
+        </button>
+
+        <button class="syn-nav-item" id="nav-saved" onclick="Synapse.nav('saved')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+          <span>Saved Articles</span>
+          <span class="syn-counter-pill" id="badge-saved-count">0</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Status Telemetry -->
+      <div class="syn-sidebar-foot">
+        <div class="syn-system-indicator">
+          <div><span class="syn-radar-beacon"></span>SAT-LINK ACTIVE</div>
+          <div style="color: var(--syn-cyan);">99.9%</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. STAGE CANVAS -->
+    <main class="syn-stage">
+
+      <!-- Top Omnibar Command Header -->
+      <header class="syn-topbar">
+        <div class="syn-omni-wrap">
+          <svg class="syn-omni-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="global-omnibar" class="syn-omni-input" placeholder="Search any country, topic, politician, startup, or conflict globally..." />
+          <span class="syn-omni-badge">ENTER</span>
+        </div>
+
+        <div class="syn-topbar-actions">
+          <div class="syn-telemetry-chip">
+            <span style="color: var(--syn-emerald);">●</span>
+            <span id="telemetry-outlets-label">Multi-Wire Sync</span>
+          </div>
+
+          <button class="syn-btn-icon" title="Refresh Live Data" onclick="Synapse.refreshAll()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Fast Stream Ticker Bar -->
+      <div class="syn-ticker">
+        <div class="syn-ticker-tag">LIVE DISPATCH</div>
+        <div class="syn-ticker-track">
+          <div id="ticker-feed-track" class="syn-ticker-items">
+            <span class="syn-ticker-item">Continuous global news intelligence active across 100+ nations...</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Right: Weather Widget & Quick Utilities -->
-      <div class="hidden lg:flex items-center gap-3 text-xs text-[#5A626E] font-medium pr-2">
-        <span class="flex items-center gap-1 font-mono-data text-slate-700">
-          <span>☀️</span> 72° Global
-        </span>
-        <button onclick="refreshHome()" class="p-1 text-slate-400 hover:text-[#1769E0]" title="Refresh Headlines">↻</button>
-      </div>
-    </nav>
+      <!-- Main Canvas Switcher -->
+      <div class="syn-canvas">
 
-    <!-- 4. SECONDARY NEWS STRIP (4 Compact Stories in a Row, Exactly like Reference) -->
-    <div class="bg-[#F8FAFC] border-b border-[#E2E5E9] px-4 md:px-6 py-2.5">
-      <div id="secondary-news-strip" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-        <!-- 4 Small Cards Injected by JS -->
-        <div class="flex items-center gap-2.5 p-1 bg-white rounded border border-[#E2E5E9]">
-          <div class="w-14 h-14 bg-slate-200 rounded flex-shrink-0 skeleton"></div>
-          <div class="flex-1 min-w-0">
-            <div class="h-3 w-3/4 skeleton mb-1"></div>
-            <div class="h-2 w-1/2 skeleton"></div>
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: RADAR (LIVE FEED)
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-radar" class="syn-view-panel active">
+          
+          <!-- Category Quick Bar -->
+          <div class="syn-filter-strip">
+            <button class="syn-chip active" onclick="Synapse.setCategory('all')">ALL INTEL</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('world')">WORLD</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('tech')">TECHNOLOGY</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('ai')">ARTIFICIAL INTEL</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('business')">MARKETS</button>
+            <button class="syn-chip" onclick="Synapse.setCategory('science')">SCIENCE</button>
+            <button class="syn-chip" onclick="Synapse.search('Climate')">CLIMATE</button>
+            <button class="syn-chip" onclick="Synapse.search('Geopolitics')">GEOPOLITICS</button>
           </div>
-        </div>
-        <div class="flex items-center gap-2.5 p-1 bg-white rounded border border-[#E2E5E9]">
-          <div class="w-14 h-14 bg-slate-200 rounded flex-shrink-0 skeleton"></div>
-          <div class="flex-1 min-w-0">
-            <div class="h-3 w-3/4 skeleton mb-1"></div>
-            <div class="h-2 w-1/2 skeleton"></div>
+
+          <!-- Spotlight & Mini Stream Row -->
+          <div class="syn-spotlight-row">
+            
+            <!-- Spotlight Card -->
+            <div class="syn-spotlight-card" id="spotlight-box" onclick="Synapse.openSpotlight()">
+              <img id="spotlight-img" class="syn-spotlight-img" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80" alt="spotlight" />
+              <div class="syn-spotlight-overlay"></div>
+              <div class="syn-spotlight-body">
+                <span class="syn-tag syn-tag-rose" id="spotlight-tag">PRIORITY BRIEF</span>
+                <h1 class="syn-spotlight-headline" id="spotlight-title">Loading Global Dispatches...</h1>
+                <p class="syn-spotlight-summary" id="spotlight-desc"></p>
+                <div class="syn-spotlight-meta">
+                  <span id="spotlight-source" style="color: var(--syn-cyan); font-weight: 700;">Verified Wire</span>
+                  <span>•</span>
+                  <span id="spotlight-time">Just Now</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Side Stream Feed Box -->
+            <div class="syn-intercept-panel">
+              <div class="syn-panel-header">
+                <span>INTERCEPT FEED</span>
+                <span style="color: var(--syn-cyan); font-size: 10px;">REAL-TIME</span>
+              </div>
+              <div id="stream-scroll-list" class="syn-intercept-list">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
           </div>
-        </div>
-        <div class="flex items-center gap-2.5 p-1 bg-white rounded border border-[#E2E5E9]">
-          <div class="w-14 h-14 bg-slate-200 rounded flex-shrink-0 skeleton"></div>
-          <div class="flex-1 min-w-0">
-            <div class="h-3 w-3/4 skeleton mb-1"></div>
-            <div class="h-2 w-1/2 skeleton"></div>
+
+          <!-- Dispatches Matrix Header -->
+          <div style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-family: var(--syn-font-head); font-size: 17px; font-weight: 700; color: var(--syn-text-head);">
+              Verified Global Dispatches
+            </div>
+            <div style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-text-dim);" id="dispatches-status-label">
+              Streaming live dispatches
+            </div>
           </div>
-        </div>
-        <div class="flex items-center gap-2.5 p-1 bg-white rounded border border-[#E2E5E9]">
-          <div class="w-14 h-14 bg-slate-200 rounded flex-shrink-0 skeleton"></div>
-          <div class="flex-1 min-w-0">
-            <div class="h-3 w-3/4 skeleton mb-1"></div>
-            <div class="h-2 w-1/2 skeleton"></div>
+
+          <!-- Articles Matrix Grid -->
+          <div id="radar-matrix-grid" class="syn-card-matrix">
+            <!-- Injected via JS -->
           </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: SEARCH
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-search" class="syn-view-panel">
+          <div class="syn-search-container">
+            <div class="syn-search-hero">
+              <h1>Universal Multi-Source Search</h1>
+              <p style="color: var(--syn-text-sec); font-size: 13.5px;">Search across 100+ countries, national broadcasters, and independent publications.</p>
+            </div>
+
+            <div class="syn-search-input-row">
+              <input type="text" id="search-view-input" placeholder="Search any country, event, person, or local incident..." />
+              <button class="syn-btn-primary" onclick="Synapse.execSearch()">Run Inquiry</button>
+            </div>
+
+            <div class="syn-geo-pills">
+              <button class="syn-chip" onclick="Synapse.search('latest news in Nepal')">🇳🇵 Nepal</button>
+              <button class="syn-chip" onclick="Synapse.search('Mongolia news today')">🇲🇳 Mongolia</button>
+              <button class="syn-chip" onclick="Synapse.search('Kenya developments')">🇰🇪 Kenya</button>
+              <button class="syn-chip" onclick="Synapse.search('Greenland news')">🇬🇱 Greenland</button>
+              <button class="syn-chip" onclick="Synapse.search('Bhutan latest news')">🇧🇹 Bhutan</button>
+              <button class="syn-chip" onclick="Synapse.search('South America tech')">🌎 South America</button>
+              <button class="syn-chip" onclick="Synapse.search('Antarctica research')">🇦🇶 Antarctica</button>
+            </div>
+
+            <!-- Geographic Coverage Telemetry Layer Banner -->
+            <div id="search-coverage-card" style="display: none;"></div>
+
+            <!-- Search Results Matrix -->
+            <div id="search-matrix-grid" class="syn-card-matrix">
+              <div style="grid-column: 1/-1; text-align: center; padding: 60px 0; color: var(--syn-text-dim);">
+                Enter a query above to initiate multi-source worldwide discovery.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: AI DOSSIER
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-dossier" class="syn-view-panel">
+          <div class="syn-dossier-frame">
+            <div style="margin-bottom: 20px;">
+              <h1 style="font-family: var(--syn-font-head); font-size: 26px; font-weight: 800; color: #fff;">AI Intelligence Dossier</h1>
+              <p style="color: var(--syn-text-sec); font-size: 13px; margin-top: 4px;">Automated multi-source corroboration, key point synthesis, and bias assessment.</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+              <input type="text" id="dossier-topic-input" class="syn-omni-input" style="height: 42px; font-size: 13.5px;" placeholder="Topic for dossier (e.g. OpenAI GPT-5, Global Semiconductor Supply Chain, Federal Reserve)..." />
+              <button class="syn-btn-primary" onclick="Synapse.execDossier()">✦ Synthesize</button>
+            </div>
+
+            <div id="dossier-result-board" class="syn-dossier-board">
+              <div style="text-align: center; padding: 60px 0; color: var(--syn-text-dim);">
+                Enter any topic above to generate a synthesized intelligence briefing with full source grounding.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: CHAT
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-chat" class="syn-view-panel">
+          <div class="syn-chat-shell">
+            <div class="syn-panel-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="syn-radar-beacon"></span>
+                <span style="font-weight: 700; font-family: var(--syn-font-head);">Conversational News AI Analyst</span>
+              </div>
+              <button class="syn-chip" onclick="Synapse.resetChat()">New Session</button>
+            </div>
+
+            <div class="syn-chat-stream" id="chat-messages-log">
+              <!-- Messages stream here -->
+            </div>
+
+            <div class="syn-chat-input-row">
+              <textarea id="chat-textarea" placeholder="Ask any question about breaking events, geopolitical conflicts, or technologies..."></textarea>
+              <button class="syn-btn-primary" style="height: 38px;" onclick="Synapse.sendChatMessage()">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: KNOWLEDGE GRAPH
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-graph" class="syn-view-panel">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <div>
+              <h2 style="font-family: var(--syn-font-head); font-size: 18px; font-weight: 700; color: #fff;">Entity Relationship Graph</h2>
+              <p style="color: var(--syn-text-sec); font-size: 11.5px;">Visual cluster linking topics, publishers, and verified articles.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="graph-topic-input" class="syn-omni-input" style="width: 200px; height: 32px;" placeholder="Filter topic..." />
+              <button class="syn-btn-primary" style="height: 32px; padding: 0 14px;" onclick="Synapse.renderGraph()">Map</button>
+            </div>
+          </div>
+          <div class="syn-graph-frame">
+            <svg id="syn-d3-svg" style="width: 100%; height: 100%;"></svg>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: TIMELINE
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-timeline" class="syn-view-panel">
+          <div style="max-width: 760px; margin: 0 auto;">
+            <div style="margin-bottom: 20px;">
+              <h2 style="font-family: var(--syn-font-head); font-size: 22px; font-weight: 800; color: #fff;">Event Chronology</h2>
+              <p style="color: var(--syn-text-sec); font-size: 12.5px;">Historical sequence of milestones and developing developments.</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+              <input type="text" id="timeline-query-input" class="syn-omni-input" style="height: 40px;" placeholder="Event or topic (e.g. Artificial Intelligence, Climate Summit)..." />
+              <button class="syn-btn-primary" onclick="Synapse.renderTimeline()">Build Chronology</button>
+            </div>
+
+            <div id="timeline-flow-list" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Chronology nodes injected here -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+             VIEW: SAVED ARTICLES
+             ══════════════════════════════════════════════════════ -->
+        <section id="panel-saved" class="syn-view-panel">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+            <div>
+              <h2 style="font-family: var(--syn-font-head); font-size: 20px; font-weight: 800; color: #fff;">Saved Intelligence Dispatches</h2>
+              <p style="color: var(--syn-text-sec); font-size: 12px;">Articles stored offline in your private command cache.</p>
+            </div>
+            <button class="syn-chip" style="color: var(--syn-rose);" onclick="Synapse.clearSaved()">Clear Cache</button>
+          </div>
+          <div id="saved-matrix-grid" class="syn-card-matrix">
+            <!-- Saved cards injected here -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ARTICLE DETAIL MODAL DIALOG -->
+  <div id="syn-article-modal" class="syn-modal-backdrop hidden">
+    <div class="syn-modal-box">
+      <div class="syn-modal-head">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="syn-tag syn-tag-cyan" id="modal-tag-badge">WORLD</span>
+          <span id="modal-source-label" style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-text-dim);">Newswire</span>
         </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="syn-chip" onclick="Synapse.toggleAudioModal()">
+            <span id="modal-audio-btn-txt">🔊 Listen</span>
+          </button>
+          <button class="syn-chip" onclick="Synapse.saveModalArticle()">
+            <span id="modal-save-btn-txt">⭐ Save</span>
+          </button>
+          <button class="syn-chip" style="padding: 4px 10px;" onclick="Synapse.closeModal()">✕</button>
+        </div>
+      </div>
+
+      <div class="syn-modal-body">
+        <h1 class="syn-modal-title" id="modal-title-text">Article Headline</h1>
+        <div style="display: flex; gap: 10px; font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-text-dim); margin-bottom: 14px;">
+          <span id="modal-author-text">Editorial Staff</span>
+          <span>•</span>
+          <span id="modal-time-text">Just now</span>
+        </div>
+
+        <div id="modal-body-text" style="font-size: 14px; line-height: 1.65; color: var(--syn-text-sec);">
+          Content loading...
+        </div>
+      </div>
+
+      <div class="syn-modal-foot">
+        <button class="syn-btn-primary" style="height: 34px; padding: 0 14px;" onclick="Synapse.dossierFromModal()">✦ Generate AI Dossier</button>
+        <a id="modal-external-link" href="#" target="_blank" style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-cyan); text-decoration: none;">Publisher Link ↗</a>
       </div>
     </div>
+  </div>
 
-    <!-- =======================================================================
-         WORKSPACE TABS CONTAINER
-         ======================================================================= -->
-    <main class="p-4 md:p-6 space-y-8">
-
-      <!-- =====================================================================
-           TAB 1: EDITORIAL HOMEPAGE (REFERENCE LAYOUT)
-           ===================================================================== -->
-      <div id="panel-home" class="tab-panel space-y-8">
-
-        <!-- ROW 1: HERO STORY (~70%) + AI DIGEST / TOP SCORES PANEL (~30%) -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          
-          <!-- Large Hero Story Card (8 of 12 cols = ~67%) -->
-          <div class="lg:col-span-8 news-card hero-card relative min-h-[380px] md:min-h-[440px] flex flex-col justify-end p-6 md:p-8 cursor-pointer group" onclick="openHeroArticle()">
-            <!-- Editorial Background Image -->
-            <div class="img-zoom-wrap absolute inset-0 z-0">
-              <img id="hero-img" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80" alt="Hero News" class="w-full h-full object-cover" />
-              <!-- Dark Cinematic Gradient Overlay -->
-              <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent"></div>
-            </div>
-
-            <!-- Hero Overlay Content -->
-            <div class="relative z-10 space-y-2.5 text-white max-w-2xl">
-              <div class="flex items-center gap-2">
-                <span id="hero-category" class="tag-pill">TECHNOLOGY</span>
-                <span id="hero-source-count" class="text-[11px] font-mono-data text-slate-300">Verified Wire · 24 sources</span>
-              </div>
-              <h1 id="hero-title" class="text-2xl md:text-4xl font-extrabold leading-tight tracking-tight">
-                Global Artificial Intelligence & Technology Dispatches
-              </h1>
-              <p id="hero-summary" class="text-xs md:text-sm text-slate-300 line-clamp-2 leading-relaxed">
-                Aggregating real-time breaking developments across international newsrooms and regional publishers.
-              </p>
-              <div class="pt-2 flex items-center justify-between">
-                <button class="px-4 py-2 rounded-full bg-white text-slate-900 text-xs font-bold hover:bg-slate-100 transition shadow">
-                  Read Full Story →
-                </button>
-                <div class="flex items-center gap-1.5 text-slate-400 text-xs">
-                  <span class="w-2 h-2 rounded-full bg-[#1769E0]"></span>
-                  <span class="w-2 h-2 rounded-full bg-white/40"></span>
-                  <span class="w-2 h-2 rounded-full bg-white/40"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dark Editorial Information Panel: ✦ AI DIGEST (4 of 12 cols = ~33%) -->
-          <div class="lg:col-span-4 dark-panel p-5 flex flex-col justify-between border border-[#222834]">
-            <div>
-              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div class="flex items-center gap-1.5 text-xs font-bold text-white font-mono-data tracking-wide">
-                  <span class="text-[#1769E0]">✦</span> AI DIGEST
-                </div>
-                <button onclick="switchTab('digest')" class="text-[11px] text-[#1769E0] hover:underline font-semibold font-mono-data">View All →</button>
-              </div>
-
-              <!-- Today's Global Digest Bullet List -->
-              <div class="py-3 space-y-3">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono-data">Today's Global Intelligence</div>
-                <ul id="home-ai-digest-bullets" class="space-y-2.5 text-xs text-slate-300 leading-relaxed">
-                  <li class="flex items-start gap-2">
-                    <span class="text-[#1769E0] font-bold mt-0.5">•</span>
-                    <span>Monitoring live wire dispatches across 100+ countries and regional publishers.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="text-[#1769E0] font-bold mt-0.5">•</span>
-                    <span>Cross-source corroboration active with automated hallucination shields.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="text-[#1769E0] font-bold mt-0.5">•</span>
-                    <span>Real-time entity linking and sentiment telemetry enabled.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- Bottom Metadata & Button -->
-            <div class="pt-3 border-t border-slate-800 space-y-2">
-              <div class="text-[10px] text-slate-400 font-mono-data flex justify-between">
-                <span>Based on 34 sources</span>
-                <span class="text-emerald-400">12 countries · 8 languages</span>
-              </div>
-              <button onclick="switchTab('digest')" class="w-full py-2 rounded bg-[#1769E0] hover:bg-[#0F4FA8] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow">
-                View Full Executive Digest →
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- ROW 2: DON'T MISS (70%) + TOP STORIES SIDEBAR (30%) -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          
-          <!-- "Don't Miss" Section (8 cols) -->
-          <div class="lg:col-span-8 space-y-3">
-            <div class="flex items-center justify-between">
-              <h2 class="section-title">Don't Miss</h2>
-              <span class="text-xs text-slate-400 font-medium">Curated Global Highlights</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-              <!-- One Large Card on the left (5 cols) -->
-              <div id="dont-miss-large" class="md:col-span-5 news-card relative min-h-[320px] flex flex-col justify-end p-5 cursor-pointer group" onclick="openDontMissLarge()">
-                <div class="img-zoom-wrap absolute inset-0 z-0">
-                  <img id="dont-miss-large-img" src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80" alt="Spotlight Story" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent"></div>
-                </div>
-                <div class="relative z-10 space-y-1.5 text-white">
-                  <span id="dont-miss-large-tag" class="tag-pill">WORLD</span>
-                  <h3 id="dont-miss-large-title" class="text-base md:text-lg font-bold leading-snug">Global Intelligence Dispatches</h3>
-                  <div id="dont-miss-large-time" class="text-[11px] text-slate-300 font-mono-data">Reuters · 2 hours ago</div>
-                </div>
-              </div>
-
-              <!-- 2x2 Grid of 4 Small Cards on the right (7 cols) -->
-              <div id="dont-miss-grid" class="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- 4 Cards Injected by JS -->
-              </div>
-            </div>
-          </div>
-
-          <!-- "Top Stories" Sidebar (4 cols) -->
-          <div class="lg:col-span-4 space-y-3">
-            <div class="flex items-center justify-between">
-              <h2 class="text-sm font-extrabold text-[#111318] tracking-tight">Top Stories</h2>
-              <a href="javascript:void(0)" onclick="setHeadlinesCategory('all')" class="text-xs text-[#1769E0] font-semibold hover:underline">View All</a>
-            </div>
-
-            <!-- Numbered List (01 to 05) -->
-            <div id="top-stories-list" class="news-card p-3 divide-y divide-slate-100">
-              <!-- Injected by JS -->
-            </div>
-          </div>
-        </section>
-
-        <!-- ROW 3: POPULAR MULTIMEDIA / VIDEOS -->
-        <section class="space-y-3">
-          <div class="flex items-center justify-between">
-            <h2 class="section-title">Popular Videos</h2>
-            <span class="text-xs text-[#1769E0] font-semibold cursor-pointer hover:underline">View All</span>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <!-- Large Video Card (7 cols) -->
-            <div class="lg:col-span-7 news-card relative min-h-[280px] md:min-h-[320px] flex flex-col justify-end p-5 cursor-pointer group" onclick="openVideoModal()">
-              <div class="img-zoom-wrap absolute inset-0 z-0">
-                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=80" alt="Video cover" class="w-full h-full object-cover" />
-                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition"></div>
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-              </div>
-
-              <!-- Centered Play Button -->
-              <div class="absolute inset-0 flex items-center justify-center z-10">
-                <div class="play-btn-circle">
-                  <svg class="w-5 h-5 ml-0.5 text-[#111318]" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </div>
-              </div>
-
-              <div class="relative z-10 space-y-1 text-white">
-                <span class="px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wider font-mono-data">LIVE</span>
-                <h3 class="text-base md:text-xl font-bold leading-snug">Global Technology Briefing: Next Frontier in AI & Compute</h3>
-                <div class="text-[11px] text-slate-300 font-mono-data">● Live Now · 128 watching</div>
-              </div>
-            </div>
-
-            <!-- 3 Stacked Video Cards on the right (5 cols) -->
-            <div class="lg:col-span-5 flex flex-col justify-between gap-3">
-              <div class="news-card p-2.5 flex items-center gap-3 cursor-pointer group" onclick="openVideoModal()">
-                <div class="w-28 h-18 bg-slate-200 rounded relative overflow-hidden flex-shrink-0">
-                  <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=300&q=80" alt="thumb" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <span class="text-white text-xs">▶</span>
-                  </div>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">Autonomous Exploration in Deep Space Missions</h4>
-                  <div class="text-[10px] text-slate-400 font-mono-data mt-1">Science Wire · 2 hours ago</div>
-                </div>
-              </div>
-
-              <div class="news-card p-2.5 flex items-center gap-3 cursor-pointer group" onclick="openVideoModal()">
-                <div class="w-28 h-18 bg-slate-200 rounded relative overflow-hidden flex-shrink-0">
-                  <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80" alt="thumb" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <span class="text-white text-xs">▶</span>
-                  </div>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">Clean Energy Transition: Global Grid Modernization</h4>
-                  <div class="text-[10px] text-slate-400 font-mono-data mt-1">Economy Wire · 4 hours ago</div>
-                </div>
-              </div>
-
-              <div class="news-card p-2.5 flex items-center gap-3 cursor-pointer group" onclick="openVideoModal()">
-                <div class="w-28 h-18 bg-slate-200 rounded relative overflow-hidden flex-shrink-0">
-                  <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=300&q=80" alt="thumb" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <span class="text-white text-xs">▶</span>
-                  </div>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">Central Bank Policies and International Currency Flows</h4>
-                  <div class="text-[10px] text-slate-400 font-mono-data mt-1">Markets Wire · 6 hours ago</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ROW 4: LATEST NEWS GRID (VERIFIED DISPATCHES) -->
-        <section class="space-y-3">
-          <div class="flex items-center justify-between pb-1 border-b border-[#E2E5E9]">
-            <h2 class="section-title">Latest News</h2>
-            <div class="flex items-center gap-2 text-xs font-mono-data text-slate-500">
-              <span id="article-count-badge">Loading stories...</span>
-            </div>
-          </div>
-
-          <div id="latest-news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Injected by JS -->
-          </div>
-        </section>
-
-        <!-- ROW 5: NEWSLETTER / STAY UPDATED BANNER -->
-        <section class="p-6 md:p-8 rounded-xl bg-[#EEF4FD] border border-[#D0E1FB] flex flex-col md:flex-row items-center justify-between gap-6">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full bg-[#1769E0] text-white flex items-center justify-center text-xl flex-shrink-0 shadow">
-              ✉
-            </div>
-            <div>
-              <h3 class="text-base md:text-lg font-bold text-[#111318]">Stay Updated</h3>
-              <p class="text-xs text-slate-600 mt-0.5">Get the latest breaking news, stories, and verified global highlights delivered straight to your inbox.</p>
-            </div>
-          </div>
-          <div class="w-full md:w-auto flex items-center gap-2">
-            <input type="email" placeholder="Enter your email" class="px-4 py-2 text-xs rounded-full border border-slate-300 bg-white focus:outline-none focus:border-[#1769E0] w-full md:w-64" />
-            <button onclick="alert('Thank you for subscribing to AI News Digest Global Intelligence updates!')" class="px-5 py-2 rounded-full bg-[#1769E0] hover:bg-[#0F4FA8] text-white text-xs font-bold transition flex-shrink-0 shadow">
-              Subscribe
-            </button>
-          </div>
-        </section>
-
-      </div><!-- /panel-home -->
-
-      <!-- =====================================================================
-           TAB 2: WORLDWIDE SEARCH WORKSPACE
-           ===================================================================== -->
-      <div id="panel-search" class="tab-panel hidden space-y-6">
-        <div>
-          <div class="text-[11px] font-bold text-[#1769E0] font-mono-data tracking-widest uppercase">Global Search Workspace</div>
-          <h2 class="text-2xl font-black text-[#111318] mt-1">Multi-Source Worldwide Investigation</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Ingests international wire, national publications, regional newsrooms, and local government press</p>
-        </div>
-
-        <div class="flex gap-2">
-          <input id="search-input" type="text" placeholder="Search any topic, country, city, or event — e.g. 'latest news in Nepal', 'Tokyo tech', 'Mongolia today'..."
-            class="flex-1 bg-white border border-[#E2E5E9] rounded-lg px-4 py-2.5 text-xs text-[#111318] focus:outline-none focus:border-[#1769E0]" />
-          <button onclick="executeSearch()" class="px-5 py-2.5 bg-[#1769E0] hover:bg-[#0F4FA8] text-white text-xs font-bold rounded-lg transition shadow">
-            Search
-          </button>
-        </div>
-
-        <!-- Telemetry Coverage Layer Banner -->
-        <div id="search-coverage-banner" class="hidden"></div>
-
-        <!-- Corroborated Event Clusters / Developing Stories -->
-        <div id="search-events-container" class="hidden space-y-3"></div>
-
-        <!-- Search Results Grid -->
-        <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="p-12 text-center text-slate-400 text-sm col-span-full news-card">
-            Enter any search query above to investigate stories worldwide with grounded source attribution.
-          </div>
-        </div>
-      </div><!-- /panel-search -->
-
-      <!-- =====================================================================
-           TAB 3: WORLD MAP / GLOBAL NEWS ACTIVITY
-           ===================================================================== -->
-      <div id="panel-worldmap" class="tab-panel hidden space-y-6">
-        <div>
-          <div class="text-[11px] font-bold text-emerald-600 font-mono-data tracking-widest uppercase">Global Activity Radar</div>
-          <h2 class="text-2xl font-black text-[#111318] mt-1">Geographic News Heatmap</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Real-time geographic distribution of stories and regional newsrooms</p>
-        </div>
-
-        <div class="news-card p-6 space-y-4">
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
-            <button onclick="quickSearch('North America news')" class="p-3 text-left news-card hover:border-[#1769E0] transition">
-              <div class="text-[10px] font-bold uppercase text-slate-400 font-mono-data">North America</div>
-              <div class="text-base font-black text-slate-900 mt-1 font-mono-data">42 stories</div>
-            </button>
-            <button onclick="quickSearch('Europe news')" class="p-3 text-left news-card hover:border-[#1769E0] transition">
-              <div class="text-[10px] font-bold uppercase text-slate-400 font-mono-data">Europe</div>
-              <div class="text-base font-black text-slate-900 mt-1 font-mono-data">67 stories</div>
-            </button>
-            <button onclick="quickSearch('Asia news')" class="p-3 text-left news-card hover:border-[#1769E0] transition">
-              <div class="text-[10px] font-bold uppercase text-slate-400 font-mono-data">Asia</div>
-              <div class="text-base font-black text-slate-900 mt-1 font-mono-data">113 stories</div>
-            </button>
-            <button onclick="quickSearch('Middle East news')" class="p-3 text-left news-card hover:border-[#1769E0] transition">
-              <div class="text-[10px] font-bold uppercase text-slate-400 font-mono-data">Middle East</div>
-              <div class="text-base font-black text-slate-900 mt-1 font-mono-data">39 stories</div>
-            </button>
-            <button onclick="quickSearch('Africa news')" class="p-3 text-left news-card hover:border-[#1769E0] transition">
-              <div class="text-[10px] font-bold uppercase text-slate-400 font-mono-data">Africa</div>
-              <div class="text-base font-black text-slate-900 mt-1 font-mono-data">31 stories</div>
-            </button>
-            <button onclick="quickSearch('South America news')" class="p-3 text-left news-card hover:border-[#1769E0] transition">
-              <div class="text-[10px] font-bold uppercase text-slate-400 font-mono-data">South America</div>
-              <div class="text-base font-black text-slate-900 mt-1 font-mono-data">28 stories</div>
-            </button>
-            <button onclick="quickSearch('Oceania news')" class="p-3 text-left news-card hover:border-[#1769E0] transition">
-              <div class="text-[10px] font-bold uppercase text-slate-400 font-mono-data">Oceania</div>
-              <div class="text-base font-black text-slate-900 mt-1 font-mono-data">14 stories</div>
-            </button>
-          </div>
-        </div>
-      </div><!-- /panel-worldmap -->
-
-      <!-- =====================================================================
-           TAB 4: AI EXECUTIVE DOSSIER
-           ===================================================================== -->
-      <div id="panel-digest" class="tab-panel hidden space-y-6">
-        <div>
-          <div class="text-[11px] font-bold text-[#1769E0] font-mono-data tracking-widest uppercase">Executive Dossier Synthesis</div>
-          <h2 class="text-2xl font-black text-[#111318] mt-1">Multi-Source Intelligence Dossier</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Synthesizes key strategic takeaways, corroborated citations, and market insights</p>
-        </div>
-
-        <div class="flex gap-2">
-          <input id="digest-input" type="text" placeholder="Enter topic for verified intelligence dossier — e.g. Semiconductor supply chain, OpenAI developments, Federal Reserve..."
-            class="flex-1 bg-white border border-[#E2E5E9] rounded-lg px-4 py-2.5 text-xs text-[#111318] focus:outline-none focus:border-[#1769E0]" />
-          <button onclick="generateDigest()" class="px-5 py-2.5 bg-[#1769E0] hover:bg-[#0F4FA8] text-white text-xs font-bold rounded-lg transition shadow">
-            ✦ Synthesize Dossier
-          </button>
-        </div>
-
-        <div id="digest-result" class="news-card p-6 md:p-8">
-          <p class="text-slate-400 text-xs text-center py-8">Enter any topic above to generate a corroborated executive intelligence dossier.</p>
-        </div>
-      </div><!-- /panel-digest -->
-
-      <!-- =====================================================================
-           TAB 5: RESEARCH AI ASSISTANT (CHATBOT)
-           ===================================================================== -->
-      <div id="panel-chat" class="tab-panel hidden flex flex-col" style="height: 600px;">
-        <div class="flex items-center justify-between mb-3 flex-shrink-0">
-          <div>
-            <h2 class="text-lg font-black text-[#111318]">Research AI Assistant</h2>
-            <p class="text-xs text-slate-500">Context-aware conversational news intelligence</p>
-          </div>
-          <button onclick="startNewChat()" class="px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition">
-            + New Session
-          </button>
-        </div>
-
-        <div class="flex-1 flex flex-col news-card overflow-hidden min-h-0 bg-slate-50">
-          <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
-
-          <div id="chat-suggestions" class="px-4 pb-2 flex-shrink-0">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono-data">Suggested Inquiries</p>
-            <div id="suggestion-chips" class="flex flex-wrap gap-1.5"></div>
-          </div>
-
-          <div id="chat-typing" class="hidden px-4 pb-2 flex-shrink-0">
-            <span class="text-xs text-slate-400 font-mono-data">Investigating dispatches...</span>
-          </div>
-
-          <div class="border-t border-slate-200 p-3 bg-white flex-shrink-0">
-            <div class="flex gap-2">
-              <input id="chat-input" type="text" placeholder="Ask anything about current international news..."
-                class="flex-1 bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#1769E0]"
-                onkeydown="if(event.key==='Enter') sendChatMessage();" />
-              <button onclick="sendChatMessage()" id="chat-send-btn" class="px-4 py-2 bg-[#1769E0] text-white text-xs font-bold rounded">
-                Send
-              </button>
-            </div>
-          </div>
-        </div>
-      </div><!-- /panel-chat -->
-
-      <!-- =====================================================================
-           TAB 6: SAVED ARTICLES
-           ===================================================================== -->
-      <div id="panel-saved" class="tab-panel hidden space-y-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-[11px] font-bold text-amber-600 font-mono-data tracking-widest uppercase">My Reading List</div>
-            <h2 class="text-2xl font-black text-[#111318] mt-1">Saved Articles & Dispatches</h2>
-          </div>
-          <button onclick="clearAllSaved()" class="px-3 py-1.5 rounded border border-slate-300 text-xs text-rose-600 hover:bg-rose-50 transition">
-            Clear All
-          </button>
-        </div>
-
-        <div id="saved-articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-      </div><!-- /panel-saved -->
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="border-t border-[#E2E5E9] bg-white px-6 py-6 text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-4 font-mono-data">
-      <div>© 2026 AI News Digest · Global Editorial Intelligence Platform</div>
-      <div class="flex items-center gap-4">
-        <a href="javascript:void(0)" onclick="switchTab('home')" class="hover:text-[#1769E0]">Home</a>
-        <a href="javascript:void(0)" onclick="switchTab('search')" class="hover:text-[#1769E0]">Search</a>
-        <a href="javascript:void(0)" onclick="switchTab('worldmap')" class="hover:text-[#1769E0]">World Map</a>
-        <a href="javascript:void(0)" onclick="switchTab('digest')" class="hover:text-[#1769E0]">Executive Dossier</a>
-      </div>
-    </footer>
-
-  </div><!-- /publication-canvas -->
-
-  <!-- Application Scripts -->
-  <script src="/static/js/api.js?v=40"></script>
-  <script src="/static/js/app.js?v=40"></script>
-
+  <!-- Unified API & Master Controller Scripts -->
+  <script src="/static/js/api.js?v=600"></script>
+  <script src="/static/js/app.js?v=600"></script>
 </body>
 </html>
