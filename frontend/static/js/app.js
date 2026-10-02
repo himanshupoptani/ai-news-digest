@@ -87,30 +87,8 @@ const Synapse = {
   // ══════════════════════════════════════════════════════
   // NAVIGATION CONTROLLER
   // ══════════════════════════════════════════════════════
-  toggleSidebar() {
-    const sidebar = document.querySelector('.syn-sidebar');
-    const backdrop = document.getElementById('syn-sidebar-backdrop');
-    if (!sidebar) return;
-    const isOpen = sidebar.classList.contains('open');
-    if (isOpen) {
-      sidebar.classList.remove('open');
-      if (backdrop) backdrop.classList.add('hidden');
-    } else {
-      sidebar.classList.add('open');
-      if (backdrop) backdrop.classList.remove('hidden');
-    }
-  },
-
   nav(viewId) {
     this.state.activeView = viewId;
-
-    // Auto-close sidebar on mobile
-    const sidebar = document.querySelector('.syn-sidebar');
-    const backdrop = document.getElementById('syn-sidebar-backdrop');
-    if (sidebar && sidebar.classList.contains('open')) {
-      sidebar.classList.remove('open');
-      if (backdrop) backdrop.classList.add('hidden');
-    }
 
     // Toggle canvas view panels
     document.querySelectorAll('.syn-view-panel').forEach((el) => {
