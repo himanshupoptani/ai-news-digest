@@ -21,14 +21,11 @@ COPY . .
 # Create data directory for SQLite persistence
 RUN mkdir -p /app/data
 
-# Make startup script executable
-RUN chmod +x /app/start.sh
-
 # Environment defaults (Railway overrides PORT automatically)
 ENV HOST=0.0.0.0
 ENV APP_MODE=live
 ENV ENVIRONMENT=production
 ENV DEBUG=False
 
-# Use startup script so $PORT is properly resolved
-CMD ["/bin/sh", "/app/start.sh"]
+# Use Python directly to read PORT — avoids shell CRLF issues on Windows
+CMD ["python", "-c", "import os, uvicorn; uvicorn.run('backend.app.main:app', host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), workers=1)"]
