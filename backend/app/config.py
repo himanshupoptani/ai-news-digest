@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     PORT: int = 8000
-    HOST: str = "127.0.0.1"
+    HOST: str = "0.0.0.0"
 
     # 'live' (uses live APIs/RSS) or 'demo' (100% offline sample news)
     APP_MODE: str = "demo"
