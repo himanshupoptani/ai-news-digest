@@ -750,6 +750,130 @@ function appendChatBubble(role, content, strength = null, citations = [], follow
 }
 
 // ============================================================
+// TRENDING TICKER UPDATE FROM LIVE ANALYTICS
+// ============================================================
+function updateTrendingTicker(trendingTopics, articles) {
+  const tickerEl = document.getElementById("top-trending-ticker");
+  if (!tickerEl) return;
+  let text = "";
+  if (trendingTopics && trendingTopics.length > 0) {
+    text = trendingTopics.slice(0, 3).join(" · ");
+  } else if (articles && articles.length > 0) {
+    text = articles[0].title || "";
+  }
+  if (text) {
+    tickerEl.textContent = text;
+    tickerEl.onclick = () => { if (trendingTopics && trendingTopics[0]) quickSearch(trendingTopics[0]); };
+  }
+}
+
+// ============================================================
+// KNOWLEDGE GRAPH — D3.js Force-Directed
+// ============================================================
+async function loadGraph() {
+  const topic = document.getElementById("graph-topic-input")?.value?.trim() || "AI";
+  const svgEl = document.getElementById("d3-graph-svg");
+  const emptyMsg = document.getElementById("graph-empty-msg");
+  if (!svgEl) return;
+  if (emptyMsg) emptyMsg.classList.add("hidden");
+  try {
+    setLoading(true);
+    const res = await Api.getGraph(topic);
+    const nodes = res.nodes || [];
+    const edges = res.edges || [];
+    d3.select("#d3-graph-svg").selectAll("*").remove();
+    if (!nodes.length) {
+      if (emptyMsg) { emptyMsg.textContent = "No graph data for this topic. Try a broader term."; emptyMsg.classList.remove("hidden"); }
+      return;
+    }
+    const container = svgEl.parentElement;
+    const W = container ? container.clientWidth || 800 : 800;
+    const H = 520;
+    const svg = d3.select("#d3-graph-svg").attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
+    svg.append("defs").append("marker").attr("id", "arrow").attr("markerWidth", 8).attr("markerHeight", 8)
+      .attr("refX", 14).attr("refY", 3).attr("orient", "auto")
+      .append("polygon").attr("points", "0 0,8 3,0 6").attr("fill", "#CBD5E1");
+    const colorMap = { topic: "#1769E0", publisher: "#22C55E", article: "#A855F7", entity: "#F59E0B" };
+    const sim = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(edges).id(d => d.id).distance(110).strength(0.4))
+      .force("charge", d3.forceManyBody().strength(-220))
+      .force("center", d3.forceCenter(W / 2, H / 2))
+      .force("collide", d3.forceCollide(32));
+    const linkSel = svg.append("g").selectAll("line").data(edges).enter().append("line")
+      .attr("stroke", "#E2E5E9").attr("stroke-width", 1.5).attr("marker-end", "url(#arrow)");
+    const nodeSel = svg.append("g").selectAll("g").data(nodes).enter().append("g")
+      .call(d3.drag()
+        .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+        .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
+        .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+    nodeSel.append("circle")
+      .attr("r", d => d.type === "topic" ? 14 : d.type === "publisher" ? 10 : 7)
+      .attr("fill", d => colorMap[d.type] || "#94A3B8")
+      .attr("stroke", "#fff").attr("stroke-width", 2).style("cursor", "pointer")
+      .on("click", (_, d) => { if (d.label) quickSearch(d.label); });
+    nodeSel.append("text")
+      .attr("dx", d => d.type === "topic" ? 18 : 13).attr("dy", "0.35em")
+      .attr("font-size", d => d.type === "topic" ? "11px" : "10px")
+      .attr("font-weight", d => d.type === "topic" ? "800" : "600")
+      .attr("fill", "#374151").attr("font-family", "Inter,sans-serif")
+      .text(d => (d.label || "").length > 22 ? d.label.slice(0, 20) + "…" : d.label);
+    sim.on("tick", () => {
+      linkSel.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+      nodeSel.attr("transform", d => `translate(${Math.max(20, Math.min(W-20, d.x))},${Math.max(20, Math.min(H-20, d.y))})`);
+    });
+    const zoom = d3.zoom().scaleExtent([0.3, 4]).on("zoom", e => svg.selectAll("g").attr("transform", e.transform));
+    svg.call(zoom);
+  } catch (err) {
+    showError("Graph failed: " + err.message);
+    if (emptyMsg) { emptyMsg.textContent = "Error loading graph. Check your connection."; emptyMsg.classList.remove("hidden"); }
+  } finally { setLoading(false); }
+}
+
+// ============================================================
+// EVENT CHRONOLOGY TIMELINE
+// ============================================================
+async function loadTimeline() {
+  const query = document.getElementById("timeline-input")?.value?.trim() || "Artificial Intelligence";
+  const container = document.getElementById("timeline-content");
+  if (!container) return;
+  container.innerHTML = `<div class="py-12 text-center text-slate-400 text-xs news-card p-8"><div class="w-5 h-5 border-2 border-[#1769E0] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>Building timeline for "<strong>${escapeHtml(query)}</strong>"...</div>`;
+  try {
+    setLoading(true);
+    const res = await Api.getTimeline(query);
+    const milestones = res.timeline || [];
+    if (!milestones.length) {
+      container.innerHTML = `<div class="py-12 text-center text-slate-400 text-xs news-card p-8">No timeline found for "${escapeHtml(query)}". Try a broader topic like "AI" or "Climate".</div>`;
+      return;
+    }
+    container.innerHTML = `
+      <div class="relative pl-2">
+        <div class="absolute left-7 top-0 bottom-0 w-0.5 bg-[#E2E5E9] z-0"></div>
+        <div class="space-y-4">
+          ${milestones.map((m, i) => `
+            <div class="relative flex items-start gap-4">
+              <div class="relative z-10 flex-shrink-0 w-14 flex justify-center pt-1">
+                <div class="w-3 h-3 rounded-full border-2 border-[#1769E0] bg-white shadow"></div>
+              </div>
+              <div class="flex-1 news-card p-4 space-y-1.5 cursor-pointer group hover:border-slate-400 transition" onclick="quickSearch(${JSON.stringify(m.query || query)})">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[10px] font-bold text-[#1769E0] font-mono-data">${escapeHtml(m.date || ('Milestone ' + (i+1)))}</span>
+                  ${m.is_breaking ? '<span class="px-1.5 rounded text-[9px] font-bold bg-rose-100 text-rose-700 font-mono-data">BREAKING</span>' : ''}
+                </div>
+                <h4 class="text-sm font-bold text-[#111318] group-hover:text-[#1769E0] leading-snug">${escapeHtml(m.headline || m.title || '')}</h4>
+                ${m.summary ? `<p class="text-xs text-slate-500 leading-relaxed">${escapeHtml(m.summary)}</p>` : ''}
+                ${(m.sources||[]).length ? `<div class="flex flex-wrap gap-1 pt-1">${m.sources.slice(0,4).map(s=>`<span class="citation-chip">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  } catch (err) {
+    showError("Timeline error: " + err.message);
+    container.innerHTML = `<div class="py-12 text-center text-slate-400 text-xs news-card p-8">Failed to build timeline. Please try again.</div>`;
+  } finally { setLoading(false); }
+}
+
+// ============================================================
 // BOOTSTRAP INITIALIZATION
 // ============================================================
 document.addEventListener("DOMContentLoaded", () => {

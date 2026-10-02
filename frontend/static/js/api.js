@@ -52,6 +52,15 @@ const Api = {
   getChatHistory(sessionId) {
     return this.get(`/api/chat/history/${sessionId}`);
   },
+  getChatSuggestions(topic = null) {
+    const url = topic ? `/api/chat/suggest?topic=${encodeURIComponent(topic)}` : "/api/chat/suggest";
+    return this.get(url).catch(() => ({ suggestions: [
+      "What is the latest AI news today?",
+      "Summarize global market headlines",
+      "What's happening in South Asia?",
+      "Latest technology breakthroughs"
+    ]}));
+  },
 
   // ---- Intelligence ----
   getGraph(topic = null) {
