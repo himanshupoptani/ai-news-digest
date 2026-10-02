@@ -5,7 +5,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
@@ -16,13 +21,11 @@ COPY . .
 # Create data directory for SQLite persistence
 RUN mkdir -p /app/data
 
-# Default environment variables (overridden by Railway env vars)
+# Environment defaults (Railway overrides PORT automatically)
 ENV HOST=0.0.0.0
-ENV PORT=8000
 ENV APP_MODE=live
 ENV ENVIRONMENT=production
 ENV DEBUG=False
 
-EXPOSE 8000
-
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Railway injects $PORT — we use exec form with shell to expand it
+CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
