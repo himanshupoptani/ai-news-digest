@@ -21,11 +21,14 @@ COPY . .
 # Create data directory for SQLite persistence
 RUN mkdir -p /app/data
 
+# Make startup script executable
+RUN chmod +x /app/start.sh
+
 # Environment defaults (Railway overrides PORT automatically)
 ENV HOST=0.0.0.0
 ENV APP_MODE=live
 ENV ENVIRONMENT=production
 ENV DEBUG=False
 
-# Railway injects $PORT — we use exec form with shell to expand it
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+# Use startup script so $PORT is properly resolved
+CMD ["/bin/sh", "/app/start.sh"]
