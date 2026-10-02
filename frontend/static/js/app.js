@@ -1,766 +1,775 @@
 /**
- * app.js — NEXUS GLOBAL INTELLIGENCE MASTER CONTROLLER (v4.0)
- * Ultra-fast, reactive, high-density command center engine
+ * app.js — Frontend State Controller for AI News Digest
+ * Editorial Publication Edition
  */
 
-const Nexus = {
-  state: {
-    activeView: 'home',
-    activeCat: 'all',
-    articles: [],
-    searchResults: [],
-    currentModalArticle: null,
-    savedArticles: JSON.parse(localStorage.getItem('nexus_saved') || '[]'),
-    sessionId: null,
-    speaking: false,
-    utterance: null
-  },
-
-  init() {
-    this.bindEvents();
-    this.updateSavedBadge();
-    this.loadRadar();
-    this.initChatWelcome();
-  },
-
-  bindEvents() {
-    // Escape closes modal
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') Nexus.closeModal();
-    });
-
-    // Top Omnibar
-    const omni = document.getElementById('omni-search');
-    if (omni) {
-      omni.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const val = omni.value.trim();
-          if (val) Nexus.searchKeyword(val);
-        }
-      });
-    }
-
-    // Search View Input
-    const deepSearch = document.getElementById('deep-search-input');
-    if (deepSearch) {
-      deepSearch.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Nexus.execSearch();
-      });
-    }
-
-    // Dossier Input
-    const dossier = document.getElementById('dossier-input');
-    if (dossier) {
-      dossier.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Nexus.generateDossier();
-      });
-    }
-
-    // Chat Textarea
-    const chatInput = document.getElementById('chat-input');
-    if (chatInput) {
-      chatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          Nexus.sendChatMsg();
-        }
-      });
-    }
-
-    // Graph topic
-    const graphTopic = document.getElementById('graph-search-topic');
-    if (graphTopic) {
-      graphTopic.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Nexus.renderGraph();
-      });
-    }
-
-    // Timeline topic
-    const timelineTopic = document.getElementById('timeline-query');
-    if (timelineTopic) {
-      timelineTopic.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Nexus.renderTimeline();
-      });
-    }
-  },
-
-  // Navigation
-  nav(viewId) {
-    this.state.activeView = viewId;
-
-    // Toggle view visibility
-    document.querySelectorAll('.view-panel').forEach((el) => {
-      el.classList.remove('active');
-    });
-    const target = document.getElementById(`view-${viewId}`);
-    if (target) target.classList.add('active');
-
-    // Toggle sidebar active state
-    document.querySelectorAll('.side-nav-item').forEach((btn) => {
-      btn.classList.remove('active');
-    });
-    const navBtn = document.getElementById(`nav-${viewId}`);
-    if (navBtn) navBtn.classList.add('active');
-
-    // View specific activations
-    if (viewId === 'saved') {
-      this.renderSavedList();
-    } else if (viewId === 'graph') {
-      const gInput = document.getElementById('graph-search-topic');
-      if (gInput && !gInput.value) gInput.value = 'Artificial Intelligence';
-      this.renderGraph();
-    } else if (viewId === 'timeline') {
-      const tInput = document.getElementById('timeline-query');
-      if (tInput && !tInput.value) tInput.value = 'Artificial Intelligence';
-      this.renderTimeline();
-    }
-  },
-
-  // Category Filter
-  filterCat(cat) {
-    this.state.activeCat = cat;
-    document.querySelectorAll('.category-filter-strip .cat-chip').forEach((btn) => {
-      btn.classList.remove('active');
-      if (btn.textContent.toLowerCase().includes(cat)) {
-        btn.classList.add('active');
-      }
-    });
-    this.loadRadar();
-  },
-
-  refreshFeed() {
-    this.loadRadar();
-  },
-
-  // Load Main Feed
-  async loadRadar() {
-    try {
-      this.showSpinner(true);
-      const [newsRes, analyticsRes] = await Promise.all([
-        Api.getHeadlines(this.state.activeCat, 21).catch(() => ({ articles: [] })),
-        Api.getAnalytics().catch(() => ({ total_articles: 30, total_sources: 18, trending_topics: [] }))
-      ]);
-
-      const articles = newsRes.articles || [];
-      this.state.articles = articles;
-
-      // Update counters
-      const liveCountBadge = document.getElementById('badge-live-count');
-      if (liveCountBadge) liveCountBadge.textContent = articles.length;
-
-      const sourcesTelemetry = document.getElementById('sources-count-telemetry');
-      if (sourcesTelemetry) sourcesTelemetry.textContent = `${analyticsRes.total_sources || 18} Global Outlets Active`;
-
-      // Update Marquee Ticker
-      this.updateTicker(analyticsRes.trending_topics || [], articles);
-
-      // Render Spotlight Feature (0)
-      if (articles.length > 0) {
-        this.renderSpotlight(articles[0]);
-      }
-
-      // Render Side Wire Feed (1..7)
-      this.renderSideWire(articles.slice(1, 8));
-
-      // Render News Grid (8..21)
-      this.renderMatrixGrid(articles.slice(8));
-
-    } catch (e) {
-      console.error('Failed to stream radar feed:', e);
-    } finally {
-      this.showSpinner(false);
-    }
-  },
-
-  updateTicker(trending, articles) {
-    const feed = document.getElementById('ticker-feed');
-    if (!feed) return;
-
-    let items = [];
-    if (trending && trending.length) {
-      items = trending.map((t) => `<span class="ticker-story" onclick="Nexus.searchKeyword('${this.escapeHtml(t)}')">${this.escapeHtml(t)}</span>`);
-    } else if (articles && articles.length) {
-      items = articles.slice(0, 8).map((a) => `<span class="ticker-story" onclick="Nexus.searchKeyword('${this.escapeHtml(a.title)}')">${this.escapeHtml(a.title)}</span>`);
-    }
-
-    if (!items.length) {
-      items = ['<span class="ticker-story">Live satellite intelligence feed online. Intercepting regional newsrooms worldwide.</span>'];
-    }
-
-    const combined = [...items, ...items].join(' <span style="opacity: 0.3; margin: 0 10px;">//</span> ');
-    feed.innerHTML = combined;
-  },
-
-  renderSpotlight(art) {
-    const title = document.getElementById('spotlight-title');
-    const snippet = document.getElementById('spotlight-snippet');
-    const source = document.getElementById('spotlight-source');
-    const time = document.getElementById('spotlight-time');
-    const tag = document.getElementById('spotlight-tag');
-    const img = document.getElementById('spotlight-img');
-
-    if (title) title.textContent = art.title;
-    if (snippet) snippet.textContent = art.content ? art.content.slice(0, 180) + '...' : '';
-    if (source) source.textContent = art.source_name || 'Verified Wire';
-    if (time) time.textContent = this.formatAgo(art.published_at);
-    if (tag) tag.textContent = (art.category || 'WORLD').toUpperCase();
-    if (img && art.image_url) {
-      img.src = art.image_url;
-      img.onerror = () => {
-        img.src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1400&q=80';
-      };
-    }
-  },
-
-  openSpotlight() {
-    if (this.state.articles.length > 0) {
-      this.openModal(this.state.articles[0]);
-    }
-  },
-
-  renderSideWire(articles) {
-    const list = document.getElementById('side-wire-list');
-    if (!list) return;
-
-    list.innerHTML = articles.map((a) => `
-      <div class="wire-item" onclick="Nexus.openModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
-        <div class="wire-title">${this.escapeHtml(a.title)}</div>
-        <div class="wire-meta">${this.escapeHtml(a.source_name || 'Newswire')} · ${this.formatAgo(a.published_at)}</div>
-      </div>
-    `).join('');
-  },
-
-  renderMatrixGrid(articles) {
-    const grid = document.getElementById('news-matrix-grid');
-    if (!grid) return;
-
-    const fallbacks = [
-      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1508873696983-2df5293cbdaf?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=700&q=80'
-    ];
-
-    grid.innerHTML = articles.map((a, idx) => {
-      const img = a.image_url || fallbacks[idx % fallbacks.length];
-      return `
-        <div class="matrix-card" onclick="Nexus.openModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
-          <div class="matrix-thumb-box">
-            <img class="matrix-thumb" src="${img}" alt="news" loading="lazy" onerror="this.src='${fallbacks[0]}'" />
-          </div>
-          <div class="matrix-body">
-            <div>
-              <span class="badge-pill badge-cyan">${this.escapeHtml(a.category || 'INTEL')}</span>
-            </div>
-            <h3 class="matrix-title">${this.escapeHtml(a.title)}</h3>
-            <p class="matrix-snippet">${this.escapeHtml(a.content ? a.content.slice(0, 110) : '')}...</p>
-            <div class="matrix-footer">
-              <span style="font-weight: 600; color: var(--text-primary);">${this.escapeHtml(a.source_name || 'Newswire')}</span>
-              <span>${this.formatAgo(a.published_at)}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  },
-
-  // Search Logic
-  searchKeyword(kw) {
-    const omni = document.getElementById('omni-search');
-    const deep = document.getElementById('deep-search-input');
-    if (omni) omni.value = kw;
-    if (deep) deep.value = kw;
-    this.nav('search');
-    this.execSearch();
-  },
-
-  async execSearch() {
-    const input = document.getElementById('deep-search-input');
-    const query = input?.value?.trim();
-    if (!query) return;
-
-    try {
-      this.showSpinner(true);
-      const res = await Api.searchNews(query, 18);
-      this.state.searchResults = res.articles || [];
-
-      // 1. Coverage Layer Banner
-      const covBanner = document.getElementById('search-coverage-banner');
-      if (covBanner && res.coverage) {
-        const c = res.coverage;
-        const geoText = c.detected_country 
-          ? `${c.detected_country.toUpperCase()} (${c.detected_region || 'World'})` 
-          : (c.detected_region || 'Worldwide Investigation');
-        const languages = (c.languages_searched || ['en']).join(', ').toUpperCase();
-
-        covBanner.className = 'coverage-banner-card';
-        covBanner.innerHTML = `
-          <div>
-            <div style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">
-              GEOGRAPHIC COVERAGE RADAR
-            </div>
-            <div style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: #fff; margin-top: 2px;">
-              ${this.escapeHtml(geoText)}
-            </div>
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <span class="badge-pill badge-indigo">LANGS: ${languages}</span>
-            <span class="badge-pill badge-emerald">OUTLETS: ${(c.sources_retrieved || []).length || this.state.searchResults.length}</span>
-            <span class="badge-pill badge-cyan">SYSTEM: MULTI-WIRE</span>
-          </div>
-        `;
-        covBanner.style.display = 'flex';
-      }
-
-      // 2. Search Grid
-      const grid = document.getElementById('search-results-grid');
-      if (grid) {
-        if (!this.state.searchResults.length) {
-          grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 60px 0; color: var(--text-muted);">
-              No dispatches discovered for "${this.escapeHtml(query)}". Try another country or topic.
-            </div>
-          `;
-        } else {
-          grid.innerHTML = this.state.searchResults.map((a) => `
-            <div class="matrix-card" onclick="Nexus.openModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
-              <div class="matrix-body">
-                <div>
-                  <span class="badge-pill badge-cyan">${this.escapeHtml(a.category || 'SEARCH')}</span>
-                </div>
-                <h3 class="matrix-title">${this.escapeHtml(a.title)}</h3>
-                <p class="matrix-snippet">${this.escapeHtml(a.content ? a.content.slice(0, 140) : '')}...</p>
-                <div class="matrix-footer">
-                  <span style="font-weight: 600; color: var(--text-primary);">${this.escapeHtml(a.source_name || 'Newswire')}</span>
-                  <span>${this.formatAgo(a.published_at)}</span>
-                </div>
-              </div>
-            </div>
-          `).join('');
-        }
-      }
-
-    } catch (e) {
-      console.error('Search error:', e);
-    } finally {
-      this.showSpinner(false);
-    }
-  },
-
-  // AI Dossier
-  async generateDossier() {
-    const input = document.getElementById('dossier-input');
-    const topic = input?.value?.trim();
-    if (!topic) return;
-
-    const canvas = document.getElementById('dossier-canvas');
-    if (canvas) {
-      canvas.innerHTML = `
-        <div style="text-align: center; padding: 60px 0;">
-          <div class="spin-orbit" style="margin: 0 auto 16px;"></div>
-          <div style="font-family: var(--font-display); font-size: 16px; font-weight: 700;">Synthesizing Intelligence Dossier...</div>
-          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 4px;">Ingesting primary sources and corroborating facts</div>
-        </div>
-      `;
-    }
-
-    try {
-      this.showSpinner(true);
-      const res = await Api.generateDigest(topic);
-      const d = res.digest || {};
-      const audit = res.audit_report || {};
-
-      if (canvas) {
-        const points = (d.key_points || []).map((p) => `
-          <div style="display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13.5px; line-height: 1.6; color: var(--text-secondary);">
-            <span style="color: var(--accent-cyan); font-weight: 700;">•</span>
-            <div>${this.escapeHtml(p)}</div>
-          </div>
-        `).join('');
-
-        const cites = (d.citations || []).map((c) => `
-          <div style="background: var(--bg-inner); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;">
-            <div style="font-size: 12px; font-weight: 700; color: #fff;">${this.escapeHtml(c.article_title || c.headline || 'Source')}</div>
-            <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--accent-cyan); margin-top: 2px;">${this.escapeHtml(c.source_name || 'Publisher')}</div>
-          </div>
-        `).join('');
-
-        canvas.innerHTML = `
-          <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
-              <div>
-                <span class="badge-pill badge-emerald">CORROBORATED INTEL</span>
-                <h2 style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: #fff; margin-top: 8px;">
-                  ${this.escapeHtml(d.headline || topic)}
-                </h2>
-              </div>
-              <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">
-                Coverage: <strong style="color: var(--accent-emerald);">${audit.coverage_percentage || 96}%</strong>
-              </div>
-            </div>
-
-            <div style="margin-top: 20px; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 12px; padding: 18px;">
-              <div style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 6px;">EXECUTIVE SUMMARY</div>
-              <div style="font-size: 14px; line-height: 1.65; color: var(--text-primary);">${this.escapeHtml(d.executive_summary || '')}</div>
-            </div>
-
-            <div style="margin-top: 24px;">
-              <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">KEY STRATEGIC DEVELOPMENTS</div>
-              <div>${points}</div>
-            </div>
-
-            ${cites ? `
-              <div style="margin-top: 24px;">
-                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">PRIMARY ATTRIBUTED SOURCES</div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;">${cites}</div>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }
-    } catch (e) {
-      if (canvas) canvas.innerHTML = `<div style="color: var(--accent-rose); padding: 40px; text-align: center;">Dossier generation failed: ${this.escapeHtml(e.message)}</div>`;
-    } finally {
-      this.showSpinner(false);
-    }
-  },
-
-  // AI Chat
-  initChatWelcome() {
-    const box = document.getElementById('chat-messages');
-    if (box && !box.children.length) {
-      this.appendMsg('assistant', 'Welcome to Nexus Intelligence Chat. I can cross-corroborate global dispatches, evaluate regional developments, or clarify complex topics.');
-    }
-  },
-
-  resetChat() {
-    this.state.sessionId = null;
-    const box = document.getElementById('chat-messages');
-    if (box) box.innerHTML = '';
-    this.initChatWelcome();
-  },
-
-  async sendChatMsg() {
-    const area = document.getElementById('chat-input');
-    const msg = area?.value?.trim();
-    if (!msg) return;
-
-    area.value = '';
-    this.appendMsg('user', msg);
-
-    try {
-      const res = await Api.sendChatMessage(msg, this.state.sessionId);
-      this.state.sessionId = res.session_id;
-      this.appendMsg('assistant', res.content);
-    } catch (e) {
-      this.appendMsg('assistant', 'Unable to reach backend intelligence pipeline.');
-    }
-  },
-
-  appendMsg(role, text) {
-    const box = document.getElementById('chat-messages');
-    if (!box) return;
-
-    const bubble = document.createElement('div');
-    bubble.className = `chat-bubble ${role}`;
-    bubble.innerHTML = text.replace(/\n/g, '<br>');
-    box.appendChild(bubble);
-    box.scrollTop = box.scrollHeight;
-  },
-
-  // D3 Knowledge Graph
-  async renderGraph() {
-    const input = document.getElementById('graph-search-topic');
-    const topic = input?.value?.trim() || 'Artificial Intelligence';
-    const svgEl = document.getElementById('nexus-d3-graph');
-    if (!svgEl) return;
-
-    try {
-      this.showSpinner(true);
-      const res = await Api.getGraph(topic);
-      const nodes = res.nodes || [];
-      const edges = res.edges || [];
-
-      d3.select('#nexus-d3-graph').selectAll('*').remove();
-
-      if (!nodes.length) return;
-
-      const W = svgEl.parentElement.clientWidth || 900;
-      const H = svgEl.parentElement.clientHeight || 550;
-
-      const svg = d3.select('#nexus-d3-graph')
-        .attr('viewBox', `0 0 ${W} ${H}`);
-
-      const colors = {
-        topic: '#06B6D4',
-        publisher: '#10B981',
-        article: '#6366F1',
-        entity: '#F59E0B'
-      };
-
-      const sim = d3.forceSimulation(nodes)
-        .force('link', d3.forceLink(edges).id((d) => d.id).distance(110))
-        .force('charge', d3.forceManyBody().strength(-240))
-        .force('center', d3.forceCenter(W / 2, H / 2))
-        .force('collide', d3.forceCollide(32));
-
-      const link = svg.append('g')
-        .selectAll('line').data(edges).enter().append('line')
-        .attr('stroke', '#1F2633')
-        .attr('stroke-width', 1.5);
-
-      const node = svg.append('g')
-        .selectAll('g').data(nodes).enter().append('g')
-        .call(d3.drag()
-          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-          .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-          .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
-        );
-
-      node.append('circle')
-        .attr('r', (d) => d.type === 'topic' ? 14 : 9)
-        .attr('fill', (d) => colors[d.type] || '#94A3B8')
-        .attr('stroke', '#090B0E')
-        .attr('stroke-width', 2)
-        .style('cursor', 'pointer')
-        .on('click', (_, d) => {
-          if (d.label) Nexus.searchKeyword(d.label);
-        });
-
-      node.append('text')
-        .attr('dx', 16)
-        .attr('dy', '0.35em')
-        .attr('font-size', '11px')
-        .attr('font-family', 'Space Grotesk, sans-serif')
-        .attr('fill', '#F8FAFC')
-        .text((d) => d.label);
-
-      sim.on('tick', () => {
-        link
-          .attr('x1', (d) => d.source.x)
-          .attr('y1', (d) => d.source.y)
-          .attr('x2', (d) => d.target.x)
-          .attr('y2', (d) => d.target.y);
-
-        node.attr('transform', (d) => `translate(${d.x},${d.y})`);
-      });
-
-      svg.call(d3.zoom().on('zoom', (e) => {
-        svg.selectAll('g').attr('transform', e.transform);
-      }));
-
-    } catch (e) {
-      console.error('Graph render error:', e);
-    } finally {
-      this.showSpinner(false);
-    }
-  },
-
-  // Timeline
-  async renderTimeline() {
-    const input = document.getElementById('timeline-query');
-    const query = input?.value?.trim() || 'Artificial Intelligence';
-    const flow = document.getElementById('timeline-flow');
-    if (!flow) return;
-
-    try {
-      this.showSpinner(true);
-      const res = await Api.getTimeline(query);
-      const milestones = res.timeline || [];
-
-      if (!milestones.length) {
-        flow.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">No timeline nodes found.</div>`;
-        return;
-      }
-
-      flow.innerHTML = milestones.map((m) => `
-        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; cursor: pointer;" onclick="Nexus.searchKeyword('${this.escapeHtml(m.query || query)}')">
-          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
-            <span class="badge-pill badge-cyan">${this.escapeHtml(m.date || 'MILESTONE')}</span>
-            ${m.is_breaking ? '<span class="badge-pill badge-rose">BREAKING</span>' : ''}
-          </div>
-          <div style="font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #fff;">${this.escapeHtml(m.headline || m.title || '')}</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">${this.escapeHtml(m.summary || '')}</div>
-        </div>
-      `).join('');
-    } catch (e) {
-      console.error('Timeline error:', e);
-    } finally {
-      this.showSpinner(false);
-    }
-  },
-
-  // Modal
-  openModal(article) {
-    this.state.currentModalArticle = article;
-    const modal = document.getElementById('article-modal');
-    if (!modal) return;
-
-    const cat = document.getElementById('m-category');
-    const src = document.getElementById('m-source');
-    const title = document.getElementById('m-title');
-    const author = document.getElementById('m-author');
-    const time = document.getElementById('m-time');
-    const body = document.getElementById('m-body');
-    const link = document.getElementById('m-link');
-
-    if (cat) cat.textContent = (article.category || 'WORLD').toUpperCase();
-    if (src) src.textContent = article.source_name || 'Verified Wire';
-    if (title) title.textContent = article.title;
-    if (author) author.textContent = article.author ? `By ${article.author}` : 'Wire Intercept';
-    if (time) time.textContent = this.formatAgo(article.published_at);
-    if (body) body.textContent = article.content || 'Full dispatch content verified at publisher source.';
-    if (link) link.href = article.url || '#';
-
-    this.updateModalSaveText();
-    this.stopAudio();
-    modal.classList.remove('hidden');
-  },
-
-  closeModal() {
-    this.stopAudio();
-    const modal = document.getElementById('article-modal');
-    if (modal) modal.classList.add('hidden');
-  },
-
-  dossierFromModal() {
-    if (!this.state.currentModalArticle) return;
-    const t = this.state.currentModalArticle.title;
-    this.closeModal();
-    this.nav('digest');
-    const input = document.getElementById('dossier-input');
-    if (input) input.value = t;
-    this.generateDossier();
-  },
-
-  toggleAudioModal() {
-    if (this.state.speaking) {
-      this.stopAudio();
-    } else {
-      this.startAudio();
-    }
-  },
-
-  startAudio() {
-    if (!('speechSynthesis' in window) || !this.state.currentModalArticle) return;
-    window.speechSynthesis.cancel();
-    const txt = `${this.state.currentModalArticle.title}. ${this.state.currentModalArticle.content || ''}`;
-    this.state.utterance = new SpeechSynthesisUtterance(txt);
-    this.state.utterance.onend = () => this.stopAudio();
-    window.speechSynthesis.speak(this.state.utterance);
-    this.state.speaking = true;
-    const btn = document.getElementById('m-audio-txt');
-    if (btn) btn.textContent = '⏹ Stop';
-  },
-
-  stopAudio() {
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    this.state.speaking = false;
-    const btn = document.getElementById('m-audio-txt');
-    if (btn) btn.textContent = '🔊 Listen';
-  },
-
-  saveCurrentModal() {
-    if (!this.state.currentModalArticle) return;
-    const url = this.state.currentModalArticle.url;
-    const idx = this.state.savedArticles.findIndex((a) => a.url === url);
-
-    if (idx >= 0) {
-      this.state.savedArticles.splice(idx, 1);
-    } else {
-      this.state.savedArticles.unshift(this.state.currentModalArticle);
-    }
-
-    localStorage.setItem('nexus_saved', JSON.stringify(this.state.savedArticles));
-    this.updateSavedBadge();
-    this.updateModalSaveText();
-  },
-
-  updateModalSaveText() {
-    const btn = document.getElementById('m-save-txt');
-    if (!btn || !this.state.currentModalArticle) return;
-    const exists = this.state.savedArticles.some((a) => a.url === this.state.currentModalArticle.url);
-    btn.textContent = exists ? '★ In Cache' : '☆ Save';
-  },
-
-  updateSavedBadge() {
-    const badge = document.getElementById('badge-saved-count');
-    if (badge) badge.textContent = this.state.savedArticles.length;
-  },
-
-  clearSaved() {
-    this.state.savedArticles = [];
-    localStorage.removeItem('nexus_saved');
-    this.updateSavedBadge();
-    this.renderSavedList();
-  },
-
-  renderSavedList() {
-    const grid = document.getElementById('saved-matrix-grid');
-    if (!grid) return;
-
-    if (!this.state.savedArticles.length) {
-      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px 0;">No articles saved in offline cache.</div>`;
-      return;
-    }
-
-    grid.innerHTML = this.state.savedArticles.map((a, idx) => `
-      <div class="matrix-card" onclick="Nexus.openModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
-        <div class="matrix-body">
-          <div><span class="badge-pill badge-rose">SAVED</span></div>
-          <h3 class="matrix-title">${this.escapeHtml(a.title)}</h3>
-          <p class="matrix-snippet">${this.escapeHtml(a.content ? a.content.slice(0, 110) : '')}...</p>
-          <div class="matrix-footer">
-            <span>${this.escapeHtml(a.source_name || 'Newswire')}</span>
-            <button class="cat-chip" style="color: var(--accent-rose); padding: 2px 6px;" onclick="event.stopPropagation(); Nexus.removeSavedItem(${idx})">Remove</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  },
-
-  removeSavedItem(idx) {
-    this.state.savedArticles.splice(idx, 1);
-    localStorage.setItem('nexus_saved', JSON.stringify(this.state.savedArticles));
-    this.updateSavedBadge();
-    this.renderSavedList();
-  },
-
-  // Utilities
-  showSpinner(show) {
-    const el = document.getElementById('global-spinner');
-    if (el) {
-      if (show) el.classList.remove('hidden');
-      else el.classList.add('hidden');
-    }
-  },
-
-  escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  },
-
-  formatAgo(dateStr) {
-    if (!dateStr) return 'Live';
-    try {
-      const d = new Date(dateStr);
-      const diff = Math.round((Date.now() - d.getTime()) / 3600000);
-      if (diff < 1) return 'Just now';
-      if (diff < 24) return `${diff}h ago`;
-      return `${Math.round(diff / 24)}d ago`;
-    } catch (e) {
-      return 'Recent';
-    }
-  }
+const State = {
+  activeTab: "home",
+  appMode: "live",
+  currentSessionId: null,
+  activeCategory: "all",
+  currentArticle: null,
+  cachedHeadlines: [],
+  savedArticles: JSON.parse(localStorage.getItem("news_saved_articles") || "[]"),
+  speechSynth: window.speechSynthesis || null,
+  speechUtterance: null,
+  isSpeaking: false,
 };
 
-// Bootstrap
-document.addEventListener('DOMContentLoaded', () => {
-  Nexus.init();
+// ============================================================
+// UTILITIES
+// ============================================================
+function setLoading(show) {
+  const spinner = document.getElementById("global-spinner");
+  if (spinner) spinner.classList.toggle("hidden", !show);
+}
+
+function showError(message) {
+  const el = document.getElementById("error-toast");
+  if (!el) return;
+  el.textContent = message;
+  el.classList.remove("hidden");
+  setTimeout(() => el.classList.add("hidden"), 5000);
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return "Recent";
+  try {
+    const d = new Date(dateStr);
+    const diffHours = Math.round((Date.now() - d.getTime()) / (1000 * 60 * 60));
+    if (diffHours < 1) return "Just now";
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${Math.round(diffHours / 24)}d ago`;
+  } catch (e) {
+    return "Recent";
+  }
+}
+
+function updateDate() {
+  const el = document.getElementById("current-date-str");
+  if (el) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    el.textContent = new Date().toLocaleDateString('en-US', options);
+  }
+}
+
+function updateSavedBadge() {
+  const b = document.getElementById("nav-saved-badge");
+  if (b) b.textContent = State.savedArticles.length;
+}
+
+// ============================================================
+// NAVIGATION TABS
+// ============================================================
+function switchTab(tabName) {
+  State.activeTab = tabName;
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+
+  const panel = document.getElementById(`panel-${tabName}`);
+  if (panel) panel.classList.remove("hidden");
+
+  if (tabName === "home") loadHome();
+  if (tabName === "saved") renderSavedArticles();
+  if (tabName === "chat") initChat();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ============================================================
+// EDITORIAL HOMEPAGE DATA LOADER
+// ============================================================
+async function loadHome() {
+  try {
+    setLoading(true);
+    updateDate();
+    const [headlinesRes, analyticsRes] = await Promise.all([
+      Api.getHeadlines(State.activeCategory, 18).catch(() => ({ articles: [] })),
+      Api.getAnalytics().catch(() => ({ total_articles: 16, total_sources: 9, trending_topics: [] }))
+    ]);
+
+    const articles = headlinesRes.articles || [];
+    State.cachedHeadlines = articles;
+
+    renderSecondaryStrip(articles);
+    renderHeroStory(articles);
+    renderAIDigestPanel(articles);
+    renderDontMiss(articles);
+    renderTopStoriesSidebar(articles);
+    renderLatestNewsGrid(articles);
+    updateSavedBadge();
+  } catch (e) {
+    showError("Failed to stream headlines: " + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function refreshHome() {
+  loadHome();
+}
+
+function setHeadlinesCategory(cat) {
+  State.activeCategory = cat;
+  document.querySelectorAll(".cat-nav-link").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  const activeBtn = document.getElementById(`cat-${cat}`);
+  if (activeBtn) activeBtn.classList.add("active");
+  switchTab("home");
+}
+
+// 1. Secondary Strip: 4 small cards in a row under nav
+function renderSecondaryStrip(articles) {
+  const el = document.getElementById("secondary-news-strip");
+  if (!el || !articles.length) return;
+  const items = articles.slice(1, 5);
+
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=200&q=80"
+  ];
+
+  el.innerHTML = items.map((art, idx) => `
+    <div class="flex items-center gap-3 p-2 bg-white rounded border border-[#E2E5E9] hover:border-slate-400 cursor-pointer transition" onclick="openArticleModalById(${idx + 1})">
+      <div class="w-14 h-14 bg-slate-200 rounded flex-shrink-0 overflow-hidden">
+        <img src="${art.image_url || fallbackImages[idx % fallbackImages.length]}" alt="thumb" class="w-full h-full object-cover" onerror="this.src='${fallbackImages[0]}'" />
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="text-xs font-bold text-[#111318] hover:text-[#1769E0] line-clamp-2 leading-snug">${escapeHtml(art.title)}</h4>
+        <div class="text-[10px] text-slate-400 font-mono-data mt-1">${escapeHtml(art.source_name || "Newswire")} · ${formatTimeAgo(art.published_at)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// 2. Large Hero Story
+function renderHeroStory(articles) {
+  if (!articles.length) return;
+  const art = articles[0];
+  const titleEl = document.getElementById("hero-title");
+  const summaryEl = document.getElementById("hero-summary");
+  const catEl = document.getElementById("hero-category");
+  const countEl = document.getElementById("hero-source-count");
+  const imgEl = document.getElementById("hero-img");
+
+  if (titleEl) titleEl.textContent = art.title;
+  if (summaryEl) summaryEl.textContent = art.content?.slice(0, 180) + "..." || "";
+  if (catEl) catEl.textContent = art.category || "TECHNOLOGY";
+  if (countEl) countEl.textContent = `${art.source_name || "Newswire"} · 34 sources · ${formatTimeAgo(art.published_at)}`;
+  if (imgEl && art.image_url) imgEl.src = art.image_url;
+}
+
+function openHeroArticle() {
+  if (State.cachedHeadlines.length > 0) {
+    openArticleModal(State.cachedHeadlines[0]);
+  }
+}
+
+// 3. AI Digest Dark Panel
+function renderAIDigestPanel(articles) {
+  const bulletsEl = document.getElementById("home-ai-digest-bullets");
+  if (!bulletsEl || !articles.length) return;
+  
+  const samplePoints = articles.slice(0, 3).map(a => `
+    <li class="flex items-start gap-2">
+      <span class="text-[#1769E0] font-bold mt-0.5">•</span>
+      <span class="line-clamp-2">${escapeHtml(a.title)}</span>
+    </li>
+  `).join("");
+  bulletsEl.innerHTML = samplePoints;
+}
+
+// 4. "Don't Miss" Section
+function renderDontMiss(articles) {
+  const largeCard = articles[5] || articles[0];
+  const smallCards = articles.slice(6, 10);
+
+  if (largeCard) {
+    const t = document.getElementById("dont-miss-large-title");
+    const tag = document.getElementById("dont-miss-large-tag");
+    const tm = document.getElementById("dont-miss-large-time");
+    const img = document.getElementById("dont-miss-large-img");
+
+    if (t) t.textContent = largeCard.title;
+    if (tag) tag.textContent = largeCard.category || "WORLD";
+    if (tm) tm.textContent = `${largeCard.source_name || "Newswire"} · ${formatTimeAgo(largeCard.published_at)}`;
+    if (img && largeCard.image_url) img.src = largeCard.image_url;
+  }
+
+  const gridEl = document.getElementById("dont-miss-grid");
+  if (!gridEl) return;
+
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1508873696983-2df5293cbdaf?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=400&q=80"
+  ];
+
+  gridEl.innerHTML = smallCards.map((art, idx) => `
+    <div class="news-card p-3 flex flex-col justify-between cursor-pointer group" onclick="openArticleModalById(${idx + 6})">
+      <div>
+        <div class="h-28 bg-slate-200 rounded overflow-hidden mb-2 img-zoom-wrap">
+          <img src="${art.image_url || fallbackImages[idx % fallbackImages.length]}" alt="card" class="w-full h-full object-cover" onerror="this.src='${fallbackImages[0]}'" />
+        </div>
+        <span class="tag-pill text-[9px] mb-1.5">${escapeHtml(art.category || "GENERAL")}</span>
+        <h4 class="text-xs font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">${escapeHtml(art.title)}</h4>
+      </div>
+      <div class="text-[10px] text-slate-400 font-mono-data mt-2">${formatTimeAgo(art.published_at)}</div>
+    </div>
+  `).join("");
+}
+
+function openDontMissLarge() {
+  if (State.cachedHeadlines.length > 5) {
+    openArticleModal(State.cachedHeadlines[5]);
+  }
+}
+
+// 5. Top Stories Numbered Sidebar
+function renderTopStoriesSidebar(articles) {
+  const el = document.getElementById("top-stories-list");
+  if (!el || !articles.length) return;
+  const topFive = articles.slice(0, 5);
+
+  const fallbackThumbs = [
+    "https://images.unsplash.com/photo-1508873696983-2df5293cbdaf?auto=format&fit=crop&w=120&q=80",
+    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=120&q=80",
+    "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=120&q=80",
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=120&q=80",
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=120&q=80"
+  ];
+
+  el.innerHTML = topFive.map((art, idx) => `
+    <div class="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 cursor-pointer group" onclick="openArticleModalById(${idx})">
+      <div class="flex items-start gap-2.5">
+        <span class="text-base font-black text-[#1769E0] font-mono-data leading-none mt-0.5">${idx + 1}</span>
+        <div>
+          <h4 class="text-xs font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">${escapeHtml(art.title)}</h4>
+          <div class="text-[10px] text-slate-400 font-mono-data mt-0.5">${escapeHtml(art.source_name || "Newswire")} · ${formatTimeAgo(art.published_at)}</div>
+        </div>
+      </div>
+      <div class="w-14 h-11 bg-slate-200 rounded overflow-hidden flex-shrink-0">
+        <img src="${art.image_url || fallbackThumbs[idx]}" alt="thumb" class="w-full h-full object-cover" onerror="this.src='${fallbackThumbs[0]}'" />
+      </div>
+    </div>
+  `).join("");
+}
+
+// 6. Latest News Grid
+function renderLatestNewsGrid(articles) {
+  const el = document.getElementById("latest-news-grid");
+  const countBadge = document.getElementById("article-count-badge");
+  if (!el) return;
+  const items = articles.slice(10);
+  if (countBadge) countBadge.textContent = `${articles.length} dispatches live`;
+
+  if (!items.length) {
+    el.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs col-span-full">All current top headlines displayed above.</div>`;
+    return;
+  }
+
+  el.innerHTML = items.map((art, idx) => `
+    <div class="news-card p-4 flex flex-col justify-between cursor-pointer group" onclick="openArticleModalById(${idx + 10})">
+      <div>
+        <div class="flex items-center justify-between text-[11px] font-mono-data text-slate-400 mb-1.5">
+          <span class="tag-pill text-[9px]">${escapeHtml(art.category || "NEWS")}</span>
+          <span>${formatTimeAgo(art.published_at)}</span>
+        </div>
+        <h4 class="text-sm font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">${escapeHtml(art.title)}</h4>
+        <p class="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">${escapeHtml(art.content?.slice(0, 140) || "")}...</p>
+      </div>
+      <div class="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono-data text-slate-400">
+        <span>${escapeHtml(art.source_name || "Newswire")}</span>
+        <span class="text-[#1769E0] font-semibold">Read →</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ============================================================
+// SEARCH LOGIC
+// ============================================================
+function executeTopSearch() {
+  const query = document.getElementById("main-search-input")?.value?.trim();
+  if (!query) return;
+  const sInput = document.getElementById("search-input");
+  if (sInput) sInput.value = query;
+  switchTab("search");
+  executeSearch();
+}
+
+function quickSearch(query) {
+  const sInput = document.getElementById("search-input");
+  const topInput = document.getElementById("main-search-input");
+  if (sInput) sInput.value = query;
+  if (topInput) topInput.value = query;
+  switchTab("search");
+  executeSearch();
+}
+
+async function executeSearch() {
+  const query = document.getElementById("search-input")?.value?.trim();
+  if (!query) return;
+  try {
+    setLoading(true);
+    const res = await Api.searchNews(query, 16, State.appMode);
+    renderSearchResults(res);
+  } catch (e) {
+    showError("Search failed: " + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderSearchResults(res) {
+  const el = document.getElementById("search-results");
+  const bannerEl = document.getElementById("search-coverage-banner");
+  const eventsEl = document.getElementById("search-events-container");
+  if (!el) return;
+
+  const articles = res.articles || [];
+  const coverage = res.coverage || {};
+  const events = res.events || [];
+
+  if (bannerEl) {
+    const geoTitle = coverage.detected_country 
+      ? `${coverage.detected_country.toUpperCase()} (${coverage.detected_region || "World"})`
+      : (coverage.detected_region || "Worldwide Open Wire");
+    const langs = (coverage.languages_searched || ["en"]).join(", ").toUpperCase();
+    const providers = (coverage.providers_used || ["Google News RSS", "GDELT"]).join(" · ");
+    const sourcesCount = (coverage.sources_retrieved || []).length || articles.length;
+
+    bannerEl.className = "p-4 rounded-lg bg-[#EEF4FD] border border-[#D0E1FB] text-xs";
+    bannerEl.innerHTML = `
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <div>
+          <span class="text-[10px] font-bold text-[#1769E0] font-mono-data uppercase">Geographic Coverage Active</span>
+          <div class="text-sm font-black text-[#111318]">${escapeHtml(geoTitle)}</div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-[11px] font-mono-data text-slate-600">
+          <span class="citation-chip">Languages: <strong>${escapeHtml(langs)}</strong></span>
+          <span class="citation-chip">Outlets: <strong class="text-emerald-700">${sourcesCount}</strong></span>
+          <span class="citation-chip">Pipeline: <strong class="text-[#1769E0]">${escapeHtml(providers)}</strong></span>
+        </div>
+      </div>
+    `;
+    bannerEl.classList.remove("hidden");
+  }
+
+  if (eventsEl) {
+    const developing = events.filter(e => e.source_count >= 2 || e.is_developing);
+    if (developing.length > 0) {
+      eventsEl.innerHTML = `
+        <div class="pt-2">
+          <h3 class="text-xs font-bold text-rose-600 uppercase font-mono-data mb-2">
+            ● Cross-Corroborated Developing Stories (${developing.length})
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            ${developing.slice(0, 4).map(ev => `
+              <div class="news-card p-3 border-rose-200 bg-rose-50/20 space-y-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 font-mono-data">
+                  🚨 ${ev.source_count} Independent Sources
+                </span>
+                <h4 class="text-xs font-bold text-[#111318] line-clamp-2 leading-snug">${escapeHtml(ev.headline)}</h4>
+                <div class="flex flex-wrap gap-1 pt-1">
+                  ${ev.sources.slice(0, 4).map(s => `<span class="citation-chip">${escapeHtml(s)}</span>`).join("")}
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+      eventsEl.classList.remove("hidden");
+    } else {
+      eventsEl.classList.add("hidden");
+    }
+  }
+
+  if (!articles.length) {
+    el.innerHTML = `<div class="p-12 text-center text-slate-400 text-xs col-span-full news-card">No articles found matching this query.</div>`;
+    return;
+  }
+  State.cachedHeadlines = articles;
+
+  el.innerHTML = articles.map((a, idx) => `
+    <div class="news-card p-4 flex flex-col justify-between cursor-pointer group" onclick="openArticleModalById(${idx})">
+      <div>
+        <div class="flex items-center justify-between text-[11px] font-mono-data text-slate-400 mb-1.5">
+          <span class="text-[#1769E0] font-bold">${escapeHtml(a.source_name || "Newswire")}</span>
+          <span>${formatTimeAgo(a.published_at)}</span>
+        </div>
+        <h4 class="text-sm font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">${escapeHtml(a.title)}</h4>
+        <p class="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">${escapeHtml(a.content?.slice(0, 160) || "")}...</p>
+      </div>
+      <div class="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+        <span class="tag-pill text-[9px]">${escapeHtml(a.category || "WORLD")}</span>
+        <span class="text-[#1769E0] font-semibold">Inspect Story →</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ============================================================
+// ARTICLE READER MODAL & AUDIO
+// ============================================================
+function openArticleModalById(idx) {
+  const art = State.cachedHeadlines[idx];
+  if (art) openArticleModal(art);
+}
+
+function openArticleModal(article) {
+  State.currentArticle = article;
+  const modal = document.getElementById("article-modal");
+  if (!modal) return;
+
+  const intel = article.intelligence || {};
+  document.getElementById("modal-title").textContent = article.title;
+  document.getElementById("modal-source-badge").textContent = article.source_name || "Newswire";
+  document.getElementById("modal-category-badge").textContent = article.category || "General";
+  document.getElementById("modal-author").textContent = `By ${article.author || "Editorial Staff"}`;
+  document.getElementById("modal-published-at").textContent = formatTimeAgo(article.published_at);
+  document.getElementById("modal-reading-time").textContent = `${intel.reading_time_min || 3} min read`;
+  document.getElementById("modal-sentiment").textContent = intel.sentiment || "Neutral";
+  document.getElementById("modal-impact").textContent = intel.impact_level || "Standard Priority";
+  document.getElementById("modal-body").innerHTML = `<p>${escapeHtml(article.content || "Full dispatch text available at original publisher.")}</p>`;
+
+  const entitiesEl = document.getElementById("modal-entities");
+  if (entitiesEl) {
+    const list = intel.entities || [];
+    entitiesEl.innerHTML = list.length ? list.map(e => `
+      <span class="citation-chip">${escapeHtml(e)}</span>
+    `).join("") : '<span class="text-xs text-slate-400 font-mono-data">None detected</span>';
+  }
+
+  const deepBtn = document.getElementById("modal-deep-digest-btn");
+  if (deepBtn) {
+    deepBtn.onclick = () => {
+      closeArticleModal();
+      switchTab("digest");
+      const dInput = document.getElementById("digest-input");
+      if (dInput) dInput.value = article.title;
+      generateDigest();
+    };
+  }
+
+  const extLink = document.getElementById("modal-external-link");
+  if (extLink) extLink.href = article.url || "#";
+
+  updateModalSaveButton();
+  stopAudioBriefing();
+  modal.classList.remove("hidden");
+}
+
+function closeArticleModal() {
+  stopAudioBriefing();
+  const modal = document.getElementById("article-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function openVideoModal() {
+  if (State.cachedHeadlines.length > 0) {
+    openArticleModal(State.cachedHeadlines[0]);
+  }
+}
+
+function toggleAudioBriefing() {
+  if (State.isSpeaking) {
+    stopAudioBriefing();
+  } else {
+    startAudioBriefing();
+  }
+}
+
+function startAudioBriefing() {
+  if (!State.speechSynth || !State.currentArticle) return;
+  State.speechSynth.cancel();
+  const text = `${State.currentArticle.title}. Reported by ${State.currentArticle.source_name}. ${State.currentArticle.content}`;
+  State.speechUtterance = new SpeechSynthesisUtterance(text);
+  State.speechUtterance.rate = 1.0;
+  State.speechUtterance.onend = () => stopAudioBriefing();
+  State.speechUtterance.onerror = () => stopAudioBriefing();
+  State.speechSynth.speak(State.speechUtterance);
+  State.isSpeaking = true;
+  const btn = document.getElementById("audio-btn-text");
+  if (btn) btn.textContent = "Stop Audio";
+}
+
+function stopAudioBriefing() {
+  if (State.speechSynth) State.speechSynth.cancel();
+  State.isSpeaking = false;
+  const btn = document.getElementById("audio-btn-text");
+  if (btn) btn.textContent = "Audio Briefing";
+}
+
+// ============================================================
+// SAVED ARTICLES
+// ============================================================
+function toggleSaveCurrentArticle() {
+  if (!State.currentArticle) return;
+  const existsIdx = State.savedArticles.findIndex(s => s.url === State.currentArticle.url);
+  if (existsIdx >= 0) {
+    State.savedArticles.splice(existsIdx, 1);
+  } else {
+    State.savedArticles.unshift(State.currentArticle);
+  }
+  localStorage.setItem("news_saved_articles", JSON.stringify(State.savedArticles));
+  updateSavedBadge();
+  updateModalSaveButton();
+}
+
+function updateModalSaveButton() {
+  if (!State.currentArticle) return;
+  const isSaved = State.savedArticles.some(s => s.url === State.currentArticle.url);
+  const icon = document.getElementById("modal-save-icon");
+  const text = document.getElementById("modal-save-text");
+  if (icon) icon.textContent = isSaved ? "★" : "☆";
+  if (text) text.textContent = isSaved ? "Saved" : "Save";
+}
+
+function clearAllSaved() {
+  State.savedArticles = [];
+  localStorage.removeItem("news_saved_articles");
+  updateSavedBadge();
+  renderSavedArticles();
+}
+
+function renderSavedArticles() {
+  const el = document.getElementById("saved-articles-grid");
+  if (!el) return;
+  if (!State.savedArticles.length) {
+    el.innerHTML = `<div class="p-12 text-center text-slate-400 text-xs col-span-full news-card">No saved articles yet.</div>`;
+    return;
+  }
+  State.cachedHeadlines = State.savedArticles;
+
+  el.innerHTML = State.savedArticles.map((art, idx) => `
+    <div class="news-card p-4 flex flex-col justify-between cursor-pointer group" onclick="openArticleModalById(${idx})">
+      <div>
+        <div class="flex items-center justify-between text-[11px] font-mono-data text-slate-400 mb-1.5">
+          <span class="text-[#1769E0] font-bold">${escapeHtml(art.source_name || "Newswire")}</span>
+          <span>${formatTimeAgo(art.published_at)}</span>
+        </div>
+        <h4 class="text-sm font-bold text-[#111318] group-hover:text-[#1769E0] line-clamp-2 leading-snug">${escapeHtml(art.title)}</h4>
+        <p class="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">${escapeHtml(art.content?.slice(0, 160) || "")}...</p>
+      </div>
+      <div class="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+        <span class="text-amber-500 font-mono-data text-[11px]">★ Saved</span>
+        <button onclick="event.stopPropagation(); State.savedArticles.splice(${idx}, 1); localStorage.setItem('news_saved_articles', JSON.stringify(State.savedArticles)); updateSavedBadge(); renderSavedArticles();" class="text-rose-600 hover:underline">
+          Remove
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ============================================================
+// EXECUTIVE DOSSIER
+// ============================================================
+async function generateDigest() {
+  const query = document.getElementById("digest-input")?.value?.trim();
+  if (!query) return;
+  try {
+    setLoading(true);
+    const res = await Api.generateDigest(query, State.appMode);
+    renderDigest(res);
+  } catch (e) {
+    showError("Dossier synthesis failed: " + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderDigest(res) {
+  const el = document.getElementById("digest-result");
+  if (!el) return;
+  const d = res.digest || {};
+  const audit = res.audit_report || {};
+  const bias = res.bias_report || {};
+
+  const keyPoints = (d.key_points || []).map(p => `
+    <li class="flex items-start gap-2 text-xs md:text-sm text-slate-700 leading-relaxed">
+      <span class="text-[#1769E0] font-bold mt-0.5">•</span>
+      <span>${escapeHtml(p)}</span>
+    </li>
+  `).join("");
+
+  const citations = (d.citations || []).map(c => `
+    <div class="p-3 bg-slate-50 rounded border border-slate-200 flex items-start gap-2.5">
+      <span class="citation-chip flex-shrink-0">[${c.index}]</span>
+      <div class="flex-1 min-w-0">
+        <div class="text-xs font-bold text-slate-900 truncate">${escapeHtml(c.article_title || c.headline)}</div>
+        <div class="text-[11px] text-slate-500">${escapeHtml(c.source_name)}</div>
+      </div>
+      ${c.url ? `<a href="${c.url}" target="_blank" class="text-xs text-[#1769E0] hover:underline font-mono-data flex-shrink-0">Read ↗</a>` : ""}
+    </div>
+  `).join("");
+
+  el.innerHTML = `
+    <div class="space-y-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-3 border-b border-slate-200">
+        <div>
+          <span class="text-[10px] font-bold text-[#1769E0] font-mono-data uppercase">✦ Verified Intelligence Dossier</span>
+          <h2 class="text-xl md:text-2xl font-black text-[#111318] mt-0.5">${escapeHtml(d.headline || "Executive Briefing")}</h2>
+        </div>
+        <span class="px-2.5 py-0.5 rounded text-[11px] font-mono-data font-bold bg-emerald-50 text-emerald-700 border border-emerald-300">✓ Corroborated</span>
+      </div>
+
+      <div class="p-4 rounded-lg bg-[#EEF4FD] border border-[#D0E1FB]">
+        <h3 class="text-xs font-bold text-[#1769E0] uppercase font-mono-data mb-1.5">Executive Summary</h3>
+        <p class="text-xs md:text-sm text-slate-800 leading-relaxed">${escapeHtml(d.executive_summary || "")}</p>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold text-slate-400 uppercase font-mono-data mb-2">Key Strategic Developments</h3>
+        <ul class="space-y-2">${keyPoints}</ul>
+      </div>
+
+      ${citations ? `
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 uppercase font-mono-data mb-2">Attributed Primary Outlets</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">${citations}</div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+// ============================================================
+// CHATBOT RESEARCH ASSISTANT
+// ============================================================
+async function initChat() {
+  const chatBox = document.getElementById("chat-messages");
+  if (chatBox && chatBox.children.length === 0) {
+    appendChatBubble("assistant", `Welcome to <strong>AI News Digest Research Assistant</strong>.<br><br>I continuously monitor live wire dispatches from Reuters, Bloomberg, Associated Press, Google News, and regional newsrooms.<br><br>Ask any question about current international developments.`);
+  }
+
+  try {
+    const res = await Api.getChatSuggestions();
+    renderSuggestionChips(res.suggestions || []);
+  } catch (e) {
+    renderSuggestionChips([
+      "What is the latest news on AI?",
+      "Summarize global business headlines",
+      "What is happening in Nepal right now?"
+    ]);
+  }
+}
+
+function renderSuggestionChips(suggestions) {
+  const container = document.getElementById("suggestion-chips");
+  if (!container) return;
+  container.innerHTML = suggestions.slice(0, 4).map(s => `
+    <button onclick="useSuggestion(this.dataset.q)" data-q="${escapeHtml(s)}"
+      class="citation-chip text-left">
+      ${escapeHtml(s)}
+    </button>
+  `).join("");
+}
+
+function useSuggestion(q) {
+  const input = document.getElementById("chat-input");
+  if (input) {
+    input.value = q;
+    input.focus();
+  }
+}
+
+function startNewChat() {
+  State.currentSessionId = null;
+  const chatBox = document.getElementById("chat-messages");
+  if (chatBox) chatBox.innerHTML = "";
+  initChat();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById("chat-input");
+  const msg = input?.value?.trim();
+  if (!msg) return;
+
+  input.value = "";
+  appendChatBubble("user", msg);
+
+  const typingEl = document.getElementById("chat-typing");
+  if (typingEl) typingEl.classList.remove("hidden");
+
+  try {
+    const res = await Api.sendChatMessage(msg, State.currentSessionId);
+    State.currentSessionId = res.session_id;
+    if (typingEl) typingEl.classList.add("hidden");
+    appendChatBubble("assistant", res.content, null, res.citations || [], res.follow_up_questions || []);
+  } catch (e) {
+    if (typingEl) typingEl.classList.add("hidden");
+    appendChatBubble("assistant", `Connection error: please verify that the backend is active.`);
+  }
+}
+
+function appendChatBubble(role, content, strength = null, citations = [], followUps = []) {
+  const chatBox = document.getElementById("chat-messages");
+  if (!chatBox) return;
+  const isUser = role === "user";
+  const div = document.createElement("div");
+  div.className = `flex ${isUser ? "justify-end" : "justify-start"}`;
+
+  let citationsHtml = "";
+  if (!isUser && citations.length > 0) {
+    citationsHtml = `
+      <div class="mt-2 pt-2 border-t border-slate-200">
+        <div class="text-[10px] font-bold text-slate-400 font-mono-data mb-1">Sources:</div>
+        <div class="flex flex-col gap-1">
+          ${citations.map(c => `
+            <div class="text-xs text-slate-600 truncate">
+              [${c.index}] ${escapeHtml(c.article_title || c.source_name)}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  div.innerHTML = `
+    <div class="max-w-[85%] ${isUser ? "bg-[#1769E0] text-white" : "bg-white text-slate-900 border border-slate-200"} rounded-lg px-3.5 py-2.5 text-xs leading-relaxed shadow-sm">
+      <div>${content}</div>
+      ${citationsHtml}
+    </div>
+  `;
+
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// ============================================================
+// BOOTSTRAP INITIALIZATION
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  switchTab("home");
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      closeArticleModal();
+    }
+  });
+
+  document.getElementById("main-search-input")?.addEventListener("keydown", e => {
+    if (e.key === "Enter") executeTopSearch();
+  });
+
+  document.getElementById("search-input")?.addEventListener("keydown", e => {
+    if (e.key === "Enter") executeSearch();
+  });
+
+  document.getElementById("digest-input")?.addEventListener("keydown", e => {
+    if (e.key === "Enter") generateDigest();
+  });
 });
