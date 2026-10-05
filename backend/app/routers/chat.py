@@ -1,32 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-import requests
 
 from backend.app.database import get_db
 from backend.app.models.chat import ChatSession, ChatMessage
 from backend.app.schemas.chat import ChatTurnRequest, ChatTurnResponse
 from backend.app.services.chatbot_service import chatbot_service, SUGGESTED_PROMPTS
-from backend.app.config import settings
 
 router = APIRouter(prefix="/api/chat", tags=["Conversational News Chatbot"])
-
-@router.get("/test-gemini")
-def test_gemini():
-    """Debug endpoint: test if Gemini API key is working."""
-    if not settings.GEMINI_API_KEY:
-        return {"status": "error", "message": "GEMINI_API_KEY not set"}
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={settings.GEMINI_API_KEY}"
-        payload = {"contents": [{"parts": [{"text": "Say hello in one sentence."}]}]}
-        resp = requests.post(url, json=payload, timeout=30)
-        if resp.status_code != 200:
-            return {"status": "error", "http_code": resp.status_code, "detail": resp.text[:300]}
-        data = resp.json()
-        text = data["candidates"][0]["content"]["parts"][0]["text"]
-        return {"status": "ok", "model": "gemini-2.0-flash-lite", "gemini_response": text}
-    except Exception as e:
-        return {"status": "exception", "error": str(e)}
 
 @router.get("/suggest")
 def get_suggested_prompts():
