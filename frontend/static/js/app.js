@@ -235,7 +235,8 @@ const Synapse = {
     const img = document.getElementById('spotlight-img');
 
     if (title) title.textContent = art.title;
-    if (desc) desc.textContent = art.content ? art.content.slice(0, 180) + '...' : '';
+    const cleanDesc = this.stripHtml(art.content || '').replace(/\n/g, ' ');
+    if (desc) desc.textContent = cleanDesc ? cleanDesc.slice(0, 180) + '...' : '';
     if (source) source.textContent = art.source_name || 'Verified Wire';
     if (time) time.textContent = this.formatTimeAgo(art.published_at);
     if (tag) tag.textContent = (art.category || 'WORLD').toUpperCase();
@@ -289,7 +290,7 @@ const Synapse = {
               <span class="syn-tag syn-tag-cyan">${this.escapeHtml(a.category || 'INTEL')}</span>
             </div>
             <h3 class="syn-card-title">${this.escapeHtml(a.title)}</h3>
-            <p class="syn-card-snippet">${this.escapeHtml(a.content ? a.content.slice(0, 115) : '')}...</p>
+            <p class="syn-card-snippet">${this.escapeHtml(this.stripHtml(a.content || '').replace(/\n/g, ' ').slice(0, 115))}...</p>
             <div class="syn-card-foot">
               <span style="font-weight: 600; color: var(--syn-text-head);">${this.escapeHtml(a.source_name || 'Newswire')}</span>
               <span>${this.formatTimeAgo(a.published_at)}</span>
@@ -367,7 +368,7 @@ const Synapse = {
                   <span class="syn-tag syn-tag-cyan">${this.escapeHtml(a.category || 'SEARCH')}</span>
                 </div>
                 <h3 class="syn-card-title">${this.escapeHtml(a.title)}</h3>
-                <p class="syn-card-snippet">${this.escapeHtml(a.content ? a.content.slice(0, 140) : '')}...</p>
+                <p class="syn-card-snippet">${this.escapeHtml(this.stripHtml(a.content || '').replace(/\n/g, ' ').slice(0, 140))}...</p>
                 <div class="syn-card-foot">
                   <span style="font-weight: 600; color: var(--syn-text-head);">${this.escapeHtml(a.source_name || 'Newswire')}</span>
                   <span>${this.formatTimeAgo(a.published_at)}</span>
@@ -696,7 +697,15 @@ const Synapse = {
     if (title) title.textContent = article.title;
     if (author) author.textContent = article.author ? `By ${article.author}` : 'Wire Service';
     if (time) time.textContent = this.formatTimeAgo(article.published_at);
-    if (body) body.textContent = article.content || 'Full dispatch content verified at publisher source.';
+    if (body) {
+      const clean = this.stripHtml(article.content || '');
+      if (clean) {
+        const paragraphs = clean.split('\n').filter(p => p.trim());
+        body.innerHTML = paragraphs.map(p => `<p style="margin-bottom: 10px;">${this.escapeHtml(p)}</p>`).join('');
+      } else {
+        body.innerHTML = '<p style="color: var(--syn-text-dim);">Full dispatch content verified at publisher source. Click "Publisher Link" below to read more.</p>';
+      }
+    }
     if (link) link.href = article.url || '#';
 
     this.updateModalSaveText();
@@ -731,7 +740,8 @@ const Synapse = {
   startAudio() {
     if (!('speechSynthesis' in window) || !this.state.currentModalArticle) return;
     window.speechSynthesis.cancel();
-    const txt = `${this.state.currentModalArticle.title}. ${this.state.currentModalArticle.content || ''}`;
+    const cleanContent = this.stripHtml(this.state.currentModalArticle.content || '').replace(/\n/g, ' ');
+    const txt = `${this.state.currentModalArticle.title}. ${cleanContent}`;
     this.state.speechUtterance = new SpeechSynthesisUtterance(txt);
     this.state.speechUtterance.onend = () => this.stopAudio();
     window.speechSynthesis.speak(this.state.speechUtterance);
@@ -796,7 +806,7 @@ const Synapse = {
         <div class="syn-card-body">
           <div><span class="syn-tag syn-tag-rose">SAVED</span></div>
           <h3 class="syn-card-title">${this.escapeHtml(a.title)}</h3>
-          <p class="syn-card-snippet">${this.escapeHtml(a.content ? a.content.slice(0, 110) : '')}...</p>
+          <p class="syn-card-snippet">${this.escapeHtml(this.stripHtml(a.content || '').replace(/\n/g, ' ').slice(0, 110))}...</p>
           <div class="syn-card-foot">
             <span>${this.escapeHtml(a.source_name || 'Newswire')}</span>
             <button class="syn-chip" style="color: var(--syn-rose); padding: 2px 6px;" onclick="event.stopPropagation(); Synapse.removeSavedItem(${idx})">Remove</button>
@@ -822,6 +832,23 @@ const Synapse = {
       if (show) el.classList.remove('hidden');
       else el.classList.add('hidden');
     }
+  },
+
+  stripHtml(html) {
+    if (!html) return '';
+    let cleaned = String(html)
+      .replace(/<\/li>/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n\n')
+      .replace(/<[^>]+>/g, ' ');
+    const tmp = document.createElement('div');
+    tmp.innerHTML = cleaned;
+    const decoded = tmp.textContent || tmp.innerText || '';
+    return decoded
+      .split('\n')
+      .map(line => line.replace(/\s+/g, ' ').trim())
+      .filter(line => line.length > 0)
+      .join('\n');
   },
 
   escapeHtml(str) {

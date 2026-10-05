@@ -1,4 +1,6 @@
 import os
+import re
+import html
 import json
 import logging
 import requests
@@ -12,6 +14,20 @@ from backend.app.config import settings
 from backend.app.schemas.news import RawArticle, NewsSearchResponse, EventClusterDTO
 
 logger = logging.getLogger(__name__)
+
+
+def _clean_html_content(raw_text: str) -> str:
+    """Strips HTML tags, converts line breaks, and unescapes HTML entities."""
+    if not raw_text:
+        return ""
+    text = re.sub(r"</li>", "\n", raw_text, flags=re.IGNORECASE)
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"</p>", "\n\n", text, flags=re.IGNORECASE)
+    clean = re.sub(r"<[^>]+>", " ", text)
+    clean = html.unescape(clean)
+    lines = [re.sub(r"\s+", " ", line).strip() for line in clean.split("\n")]
+    lines = [line for line in lines if line]
+    return "\n".join(lines)
 
 
 def _parse_date(date_str) -> Optional[datetime]:
@@ -229,7 +245,7 @@ class NewsFetcher:
                                     source_name=item.get("source", {}).get("name", "NewsAPI"),
                                     author=item.get("author") or "Staff",
                                     published_at=item.get("publishedAt", datetime.now(timezone.utc).isoformat()),
-                                    content=item.get("description") or item.get("content") or "",
+                                    content=_clean_html_content(item.get("description") or item.get("content") or ""),
                                     image_url=item.get("urlToImage"),
                                     category=category.title()
                                 ))
@@ -335,7 +351,7 @@ class NewsFetcher:
                     source_name=source_name,
                     author="Wire",
                     published_at=pub_iso,
-                    content=summary,
+                    content=_clean_html_content(summary),
                     category=category,
                     image_url=None
                 ))
@@ -391,7 +407,7 @@ class NewsFetcher:
                 source_name=item.get("source", {}).get("name", "NewsAPI"),
                 author=item.get("author") or "Staff",
                 published_at=item.get("publishedAt", datetime.now(timezone.utc).isoformat()),
-                content=item.get("description") or item.get("content") or "",
+                content=_clean_html_content(item.get("description") or item.get("content") or ""),
                 image_url=item.get("urlToImage"),
                 category="General"
             ))
@@ -430,7 +446,7 @@ class NewsFetcher:
                             source_name=feed["name"],
                             author=entry.get("author", feed["name"]),
                             published_at=pub_iso,
-                            content=summary,
+                            content=_clean_html_content(summary),
                             category=feed["category"]
                         ))
                         if len(feed_results) >= per_feed_limit:
