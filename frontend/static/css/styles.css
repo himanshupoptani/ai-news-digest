@@ -1049,3 +1049,73 @@ html, body {
 @keyframes syn-spin-anim {
   to { transform: rotate(360deg); }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE HAMBURGER BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+.syn-mobile-menu-btn {
+  display: none;
+  background: var(--syn-bg-surface);
+  border: 1px solid var(--syn-border-dim);
+  color: var(--syn-text-sec);
+  border-radius: 6px;
+  width: 36px; height: 36px;
+  align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; transition: all 0.14s;
+}
+.syn-mobile-menu-btn:hover { background: var(--syn-bg-card-hover); color: var(--syn-text-head); }
+
+.syn-mobile-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65); z-index: 150;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.syn-mobile-backdrop.active { display: block; }
+
+/* Typing indicator */
+.syn-chat-bubble.typing-indicator {
+  color: var(--syn-cyan); letter-spacing: 4px; font-size: 18px;
+  padding: 8px 16px; animation: syn-typing-pulse 1.2s ease-in-out infinite;
+}
+@keyframes syn-typing-pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE BREAKPOINT (max-width: 900px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .syn-mobile-menu-btn { display: flex; }
+  .syn-sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; height: 100vh;
+    transform: translateX(-100%); z-index: 200;
+    box-shadow: 6px 0 32px rgba(0,0,0,0.6);
+    transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
+  }
+  .syn-sidebar.mobile-open { transform: translateX(0); }
+  .syn-stage { width: 100vw; flex: 1; }
+  .syn-topbar { padding: 0 12px; gap: 10px; }
+  .syn-telemetry-chip { display: none; }
+  .syn-omni-badge { display: none; }
+  .syn-omni-input { font-size: 12px; padding: 0 12px 0 30px; }
+  .syn-canvas { padding: 12px; }
+  .syn-card-matrix { grid-template-columns: 1fr; }
+  .syn-spotlight-row { grid-template-columns: 1fr; }
+  .syn-spotlight-card { height: 260px; padding: 16px; }
+  .syn-spotlight-headline { font-size: 17px; }
+  .syn-intercept-panel { height: 240px; }
+  .syn-chat-shell { height: calc(100dvh - var(--header-h) - var(--ticker-h) - 24px); border-radius: 8px; }
+  .syn-chat-bubble { max-width: 93%; }
+  .syn-chat-input-row textarea { font-size: 15px; height: 44px; }
+  .syn-search-input-row { flex-direction: column; }
+  .syn-search-input-row input { font-size: 15px; height: 48px; }
+  .syn-search-hero h1 { font-size: 22px; }
+  .syn-coverage-banner { flex-direction: column; align-items: flex-start; }
+  .syn-filter-strip { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .syn-filter-strip::-webkit-scrollbar { display: none; }
+  .syn-modal-backdrop { padding: 0; align-items: flex-end; }
+  .syn-modal-box { max-width: 100%; border-radius: 20px 20px 0 0; max-height: 90dvh; }
+  .syn-graph-frame { height: calc(100dvh - var(--header-h) - var(--ticker-h) - 60px); }
+  .syn-dossier-frame { max-width: 100%; }
+  .syn-nav-item { padding: 12px 14px; font-size: 13px; }
+  .syn-card-body { padding: 12px; }
+  .syn-ticker-items { font-size: 10.5px; }
+}

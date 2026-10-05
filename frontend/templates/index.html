@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -90,11 +90,19 @@
       </div>
     </aside>
 
+    <!-- Mobile Backdrop (tap outside to close sidebar) -->
+    <div class="syn-mobile-backdrop" id="mobile-backdrop" onclick="Synapse.toggleMobileNav()"></div>
+
     <!-- 2. STAGE CANVAS -->
     <main class="syn-stage">
 
       <!-- Top Omnibar Command Header -->
       <header class="syn-topbar">
+        <!-- Hamburger (mobile only) -->
+        <button class="syn-mobile-menu-btn" id="mobile-menu-btn" onclick="Synapse.toggleMobileNav()" aria-label="Menu">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
         <div class="syn-omni-wrap">
           <svg class="syn-omni-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           <input type="text" id="global-omnibar" class="syn-omni-input" placeholder="Search any country, topic, politician, startup, or conflict globally..." />
