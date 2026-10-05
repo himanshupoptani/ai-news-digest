@@ -104,11 +104,6 @@ const Synapse = {
     const navBtn = document.getElementById(`nav-${viewId}`);
     if (navBtn) navBtn.classList.add('active');
 
-    // Auto-close mobile sidebar on navigation
-    if (window.innerWidth <= 900) {
-      this.closeMobileNav();
-    }
-
     // View specific activations
     if (viewId === 'saved') {
       this.renderSavedList();
@@ -121,31 +116,6 @@ const Synapse = {
       if (tInput && !tInput.value) tInput.value = 'Artificial Intelligence';
       this.renderTimeline();
     }
-  },
-
-  // Mobile nav toggle
-  toggleMobileNav() {
-    const sidebar = document.querySelector('.syn-sidebar');
-    const backdrop = document.getElementById('mobile-backdrop');
-    if (!sidebar) return;
-    const isOpen = sidebar.classList.contains('mobile-open');
-    if (isOpen) {
-      sidebar.classList.remove('mobile-open');
-      if (backdrop) backdrop.classList.remove('active');
-      document.body.style.overflow = '';
-    } else {
-      sidebar.classList.add('mobile-open');
-      if (backdrop) backdrop.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-  },
-
-  closeMobileNav() {
-    const sidebar = document.querySelector('.syn-sidebar');
-    const backdrop = document.getElementById('mobile-backdrop');
-    if (sidebar) sidebar.classList.remove('mobile-open');
-    if (backdrop) backdrop.classList.remove('active');
-    document.body.style.overflow = '';
   },
 
   // Category filter
