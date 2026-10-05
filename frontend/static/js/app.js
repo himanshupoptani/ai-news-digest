@@ -239,11 +239,20 @@ const Synapse = {
     if (source) source.textContent = art.source_name || 'Verified Wire';
     if (time) time.textContent = this.formatTimeAgo(art.published_at);
     if (tag) tag.textContent = (art.category || 'WORLD').toUpperCase();
-    if (img && art.image_url) {
-      img.src = art.image_url;
-      img.onerror = () => {
-        img.src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80';
+    if (img) {
+      const cat = (art.category || 'world').toLowerCase();
+      const catKeywords = {
+        'technology': 'technology,innovation', 'ai': 'artificial-intelligence',
+        'business': 'business,finance', 'politics': 'government,politics',
+        'science': 'science,space', 'sports': 'sports,stadium',
+        'health': 'health,medicine', 'world': 'world,city',
+        'india': 'india,culture', 'entertainment': 'cinema,entertainment'
       };
+      const kw = catKeywords[cat] || 'news,world';
+      const seed = art.title ? art.title.charCodeAt(0) : 0;
+      const fallbackSrc = `https://source.unsplash.com/1200x500/?${kw}&sig=${seed}`;
+      img.src = art.image_url || fallbackSrc;
+      img.onerror = () => { img.onerror = null; img.src = fallbackSrc; };
     }
   },
 
@@ -269,20 +278,49 @@ const Synapse = {
     const grid = document.getElementById('radar-matrix-grid');
     if (!grid) return;
 
-    const fallbacks = [
-      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1508873696983-2df5293cbdaf?auto=format&fit=crop&w=700&q=80',
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=700&q=80'
-    ];
+    // Category → relevant Unsplash keywords for meaningful images
+    const categoryImages = {
+      'technology': ['technology,computer', 'artificial-intelligence,tech', 'coding,software', 'circuit,digital', 'innovation,future'],
+      'ai': ['artificial-intelligence', 'machine-learning,tech', 'robot,future', 'neural-network', 'data,technology'],
+      'business': ['business,finance', 'stock-market,trading', 'office,corporate', 'economy,money', 'startup,entrepreneur'],
+      'politics': ['government,politics', 'parliament,democracy', 'election,voting', 'law,justice', 'diplomacy,world'],
+      'science': ['science,research', 'laboratory,experiment', 'space,astronomy', 'biology,nature', 'physics,quantum'],
+      'sports': ['sports,athlete', 'cricket,stadium', 'football,soccer', 'basketball,court', 'competition,winner'],
+      'health': ['health,medicine', 'hospital,doctor', 'fitness,wellness', 'pharmacy,drug', 'mental-health'],
+      'world': ['world,globe', 'international,news', 'city,urban', 'travel,culture', 'geography,map'],
+      'india': ['india,culture', 'delhi,city', 'mumbai,urban', 'india,technology', 'indian,politics'],
+      'entertainment': ['entertainment,cinema', 'music,concert', 'film,movie', 'celebrity,art', 'theatre,performance'],
+    };
+
+    const getImageUrl = (article, idx) => {
+      // Use article's own image if available
+      if (article.image_url && article.image_url.startsWith('http')) {
+        return article.image_url;
+      }
+      // Pick category keywords (fallback to generic news)
+      const cat = (article.category || '').toLowerCase();
+      let keywords = null;
+      for (const [key, imgs] of Object.entries(categoryImages)) {
+        if (cat.includes(key)) { keywords = imgs[idx % imgs.length]; break; }
+      }
+      if (!keywords) {
+        // Use title words for uniqueness
+        const titleWords = (article.title || '').toLowerCase()
+          .replace(/[^a-z\s]/g, '').split(' ')
+          .filter(w => w.length > 4).slice(0, 2).join(',') || 'news,world';
+        keywords = titleWords;
+      }
+      // Unsplash Source — free, no API key, unique per keyword+seed
+      const seed = idx + (article.title ? article.title.charCodeAt(0) : 0);
+      return `https://source.unsplash.com/700x400/?${keywords}&sig=${seed}`;
+    };
 
     grid.innerHTML = articles.map((a, idx) => {
-      const img = a.image_url || fallbacks[idx % fallbacks.length];
+      const img = getImageUrl(a, idx);
       return `
         <div class="syn-news-card" onclick="Synapse.openModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
           <div class="syn-thumb-frame">
-            <img src="${img}" alt="news" loading="lazy" onerror="this.src='${fallbacks[0]}'" />
+            <img src="${img}" alt="news" loading="lazy" onerror="this.onerror=null;this.src='https://source.unsplash.com/700x400/?news,world&sig=${idx}'" />
           </div>
           <div class="syn-card-body">
             <div>
@@ -492,9 +530,6 @@ const Synapse = {
     textarea.disabled = true;
     if (sendBtn) sendBtn.disabled = true;
 
-    // Remove any old follow-up chips
-    document.querySelectorAll('.syn-followup-chips').forEach(el => el.remove());
-
     this.appendChatMsg('user', msg);
 
     // Show typing indicator
@@ -512,11 +547,6 @@ const Synapse = {
       this.removeMsg(typingId);
       this.state.sessionId = res.session_id;
       this.appendChatMsg('assistant', res.content);
-
-      // Show follow-up question chips if available
-      if (res.follow_up_questions && res.follow_up_questions.length > 0) {
-        this.appendFollowUpChips(res.follow_up_questions);
-      }
     } catch (e) {
       this.removeMsg(typingId);
       const isTimeout = e.name === 'AbortError';
@@ -530,27 +560,6 @@ const Synapse = {
       textarea.focus();
     }
   },
-
-  appendFollowUpChips(questions) {
-    const box = document.getElementById('chat-messages-log');
-    if (!box || !questions.length) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'syn-followup-chips';
-    wrapper.innerHTML = `
-      <div class="syn-followup-label">💡 Ask more:</div>
-      ${questions.map(q => `
-        <button class="syn-followup-btn" onclick="
-          document.querySelectorAll('.syn-followup-chips').forEach(el => el.remove());
-          document.getElementById('chat-textarea').value = ${JSON.stringify(q)};
-          Synapse.sendChatMessage();
-        ">${this.escapeHtml(q)}</button>
-      `).join('')}
-    `;
-    box.appendChild(wrapper);
-    box.scrollTop = box.scrollHeight;
-  },
-
 
   appendChatMsg(role, text) {
     const box = document.getElementById('chat-messages-log');
