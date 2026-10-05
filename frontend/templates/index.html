@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -204,6 +204,9 @@
              ══════════════════════════════════════════════════════ -->
         <section id="panel-search" class="syn-view-panel">
           <div class="syn-search-container">
+            <div style="margin-bottom: 12px;">
+              <button class="syn-chip" style="font-weight: 600;" onclick="Synapse.nav('radar')">← Back to Live Radar</button>
+            </div>
             <div class="syn-search-hero">
               <h1>Universal Multi-Source Search</h1>
               <p style="color: var(--syn-text-sec); font-size: 13.5px;">Search across 100+ countries, national broadcasters, and independent publications.</p>
@@ -241,6 +244,9 @@
              ══════════════════════════════════════════════════════ -->
         <section id="panel-dossier" class="syn-view-panel">
           <div class="syn-dossier-frame">
+            <div style="margin-bottom: 14px;">
+              <button class="syn-chip" style="font-weight: 600;" onclick="Synapse.nav('radar')">← Back to Live Radar</button>
+            </div>
             <div style="margin-bottom: 20px;">
               <h1 style="font-family: var(--syn-font-head); font-size: 26px; font-weight: 800; color: #fff;">AI Intelligence Dossier</h1>
               <p style="color: var(--syn-text-sec); font-size: 13px; margin-top: 4px;">Automated multi-source corroboration, key point synthesis, and bias assessment.</p>
@@ -266,6 +272,7 @@
           <div class="syn-chat-shell">
             <div class="syn-panel-header">
               <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="syn-chip" style="font-weight: 600; margin-right: 4px;" onclick="Synapse.nav('radar')">← Feed</button>
                 <span class="syn-radar-beacon"></span>
                 <span style="font-weight: 700; font-family: var(--syn-font-head);">Conversational News AI Analyst</span>
               </div>
@@ -287,6 +294,9 @@
              VIEW: KNOWLEDGE GRAPH
              ══════════════════════════════════════════════════════ -->
         <section id="panel-graph" class="syn-view-panel">
+          <div style="margin-bottom: 12px;">
+            <button class="syn-chip" style="font-weight: 600;" onclick="Synapse.nav('radar')">← Back to Live Radar</button>
+          </div>
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
             <div>
               <h2 style="font-family: var(--syn-font-head); font-size: 18px; font-weight: 700; color: #fff;">Entity Relationship Graph</h2>
@@ -307,6 +317,9 @@
              ══════════════════════════════════════════════════════ -->
         <section id="panel-timeline" class="syn-view-panel">
           <div style="max-width: 760px; margin: 0 auto;">
+            <div style="margin-bottom: 14px;">
+              <button class="syn-chip" style="font-weight: 600;" onclick="Synapse.nav('radar')">← Back to Live Radar</button>
+            </div>
             <div style="margin-bottom: 20px;">
               <h2 style="font-family: var(--syn-font-head); font-size: 22px; font-weight: 800; color: #fff;">Event Chronology</h2>
               <p style="color: var(--syn-text-sec); font-size: 12.5px;">Historical sequence of milestones and developing developments.</p>
@@ -327,6 +340,9 @@
              VIEW: SAVED ARTICLES
              ══════════════════════════════════════════════════════ -->
         <section id="panel-saved" class="syn-view-panel">
+          <div style="margin-bottom: 14px;">
+            <button class="syn-chip" style="font-weight: 600;" onclick="Synapse.nav('radar')">← Back to Live Radar</button>
+          </div>
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
             <div>
               <h2 style="font-family: var(--syn-font-head); font-size: 20px; font-weight: 800; color: #fff;">Saved Intelligence Dispatches</h2>
@@ -348,6 +364,7 @@
     <div class="syn-modal-box">
       <div class="syn-modal-head">
         <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="syn-chip" style="padding: 4px 12px; font-weight: 700; color: var(--syn-cyan); border-color: var(--syn-cyan);" onclick="Synapse.closeModal()">← Back</button>
           <span class="syn-tag syn-tag-cyan" id="modal-tag-badge">WORLD</span>
           <span id="modal-source-label" style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-text-dim);">Newswire</span>
         </div>
@@ -358,7 +375,7 @@
           <button class="syn-chip" onclick="Synapse.saveModalArticle()">
             <span id="modal-save-btn-txt">⭐ Save</span>
           </button>
-          <button class="syn-chip" style="padding: 4px 10px;" onclick="Synapse.closeModal()">✕</button>
+          <button class="syn-chip" style="padding: 4px 10px;" onclick="Synapse.closeModal()" title="Close (Esc)">✕</button>
         </div>
       </div>
 
@@ -376,7 +393,10 @@
       </div>
 
       <div class="syn-modal-foot">
-        <button class="syn-btn-primary" style="height: 34px; padding: 0 14px;" onclick="Synapse.dossierFromModal()">✦ Generate AI Dossier</button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="syn-chip" style="padding: 6px 14px; font-weight: 600;" onclick="Synapse.closeModal()">← Back to Feed</button>
+          <button class="syn-btn-primary" style="height: 34px; padding: 0 14px;" onclick="Synapse.dossierFromModal()">✦ Generate AI Dossier</button>
+        </div>
         <a id="modal-external-link" href="#" target="_blank" style="font-family: var(--syn-font-mono); font-size: 11px; color: var(--syn-cyan); text-decoration: none;">Publisher Link ↗</a>
       </div>
     </div>

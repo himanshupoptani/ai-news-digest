@@ -18,16 +18,28 @@ const Synapse = {
 
   init() {
     this.bindEvents();
+    this.initHistoryRouting();
     this.updateSavedBadge();
     this.loadRadar();
     this.initChatWelcome();
   },
 
   bindEvents() {
-    // Escape key closes modal dialog
+    // Escape key closes modal dialog and mobile navigation
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') Synapse.closeModal();
+      if (e.key === 'Escape') {
+        Synapse.closeModal();
+        Synapse.closeMobileNav();
+      }
     });
+
+    // Backdrop click on article modal closes it
+    const modal = document.getElementById('syn-article-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) Synapse.closeModal();
+      });
+    }
 
     // Top Omnibar input
     const omni = document.getElementById('global-omnibar');
@@ -85,9 +97,47 @@ const Synapse = {
   },
 
   // ══════════════════════════════════════════════════════
+  // HISTORY & ROUTING CONTROLLER
+  // ══════════════════════════════════════════════════════
+  initHistoryRouting() {
+    const rawHash = (window.location.hash || '').replace('#', '');
+    const validViews = ['radar', 'search', 'dossier', 'chat', 'graph', 'timeline', 'saved'];
+    const startView = validViews.includes(rawHash) ? rawHash : 'radar';
+
+    history.replaceState({ view: startView, modalOpen: false }, '', '#' + startView);
+    if (startView !== 'radar') {
+      this.nav(startView, false);
+    }
+
+    // Intercept hardware Back button & browser navigation
+    window.addEventListener('popstate', (e) => {
+      // 1. If article modal is open, back button MUST close it without leaving site
+      const modal = document.getElementById('syn-article-modal');
+      if (modal && !modal.classList.contains('hidden')) {
+        Synapse.closeModal(false);
+        return;
+      }
+
+      // 2. If mobile drawer is open, back button closes drawer
+      const sidebar = document.querySelector('.syn-sidebar');
+      if (sidebar && sidebar.classList.contains('mobile-open')) {
+        Synapse.closeMobileNav();
+        return;
+      }
+
+      // 3. Otherwise navigate to view in history state or hash
+      const targetView = (e.state && e.state.view) || (window.location.hash ? window.location.hash.replace('#', '') : 'radar');
+      Synapse.nav(targetView, false);
+    });
+  },
+
+  // ══════════════════════════════════════════════════════
   // NAVIGATION CONTROLLER
   // ══════════════════════════════════════════════════════
-  nav(viewId) {
+  nav(viewId, pushHistory = true) {
+    if (pushHistory && this.state.activeView !== viewId) {
+      history.pushState({ view: viewId, modalOpen: false }, '', '#' + viewId);
+    }
     this.state.activeView = viewId;
 
     // Toggle canvas view panels
@@ -118,6 +168,7 @@ const Synapse = {
     }
     // Auto-close mobile sidebar on nav
     if (window.innerWidth <= 900) this.closeMobileNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
   toggleMobileNav() {
@@ -684,6 +735,9 @@ const Synapse = {
     const modal = document.getElementById('syn-article-modal');
     if (!modal) return;
 
+    // Push history state so hardware Back button & browser Back close modal instead of exiting site!
+    history.pushState({ view: this.state.activeView, modalOpen: true }, '', '#article');
+
     const cat = document.getElementById('modal-tag-badge');
     const src = document.getElementById('modal-source-label');
     const title = document.getElementById('modal-title-text');
@@ -711,12 +765,19 @@ const Synapse = {
     this.updateModalSaveText();
     this.stopAudio();
     modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
   },
 
-  closeModal() {
+  closeModal(triggerBack = true) {
     this.stopAudio();
     const modal = document.getElementById('syn-article-modal');
     if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+
+    // If closed by on-screen button, pop the modal history state cleanly
+    if (triggerBack && window.history.state && window.history.state.modalOpen) {
+      window.history.back();
+    }
   },
 
   dossierFromModal() {
