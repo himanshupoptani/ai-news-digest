@@ -458,30 +458,69 @@ const Synapse = {
 
   async sendChatMessage() {
     const textarea = document.getElementById('chat-textarea');
+    const sendBtn = document.getElementById('chat-send-btn');
     const msg = textarea?.value?.trim();
     if (!msg) return;
 
     textarea.value = '';
+    textarea.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+
     this.appendChatMsg('user', msg);
 
+    // Show typing indicator
+    const typingId = 'typing-' + Date.now();
+    this.appendChatMsgWithId('assistant', '⬤ &nbsp;⬤ &nbsp;⬤', typingId, 'typing-indicator');
+
     try {
-      const res = await Api.sendChatMessage(msg, this.state.sessionId);
+      // 60s timeout — handles Render free tier cold start (can take 30-50s)
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+
+      const res = await Api.sendChatMessageWithSignal(msg, this.state.sessionId, controller.signal);
+      clearTimeout(timeout);
+
+      this.removeMsg(typingId);
       this.state.sessionId = res.session_id;
       this.appendChatMsg('assistant', res.content);
     } catch (e) {
-      this.appendChatMsg('assistant', 'Unable to reach backend intelligence pipeline.');
+      this.removeMsg(typingId);
+      const isTimeout = e.name === 'AbortError';
+      const errMsg = isTimeout
+        ? '⚠️ Request timed out (server may be waking up). Please try again in a moment.'
+        : '⚠️ Could not reach the intelligence server. Please try again.';
+      this.appendChatMsg('assistant', errMsg);
+    } finally {
+      textarea.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+      textarea.focus();
     }
   },
 
   appendChatMsg(role, text) {
     const box = document.getElementById('chat-messages-log');
     if (!box) return;
-
     const bubble = document.createElement('div');
     bubble.className = `syn-chat-bubble ${role}`;
     bubble.innerHTML = text.replace(/\n/g, '<br>');
     box.appendChild(bubble);
     box.scrollTop = box.scrollHeight;
+  },
+
+  appendChatMsgWithId(role, text, id, extraClass = '') {
+    const box = document.getElementById('chat-messages-log');
+    if (!box) return;
+    const bubble = document.createElement('div');
+    bubble.className = `syn-chat-bubble ${role}${extraClass ? ' ' + extraClass : ''}`;
+    bubble.id = id;
+    bubble.innerHTML = text;
+    box.appendChild(bubble);
+    box.scrollTop = box.scrollHeight;
+  },
+
+  removeMsg(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
   },
 
   // ══════════════════════════════════════════════════════

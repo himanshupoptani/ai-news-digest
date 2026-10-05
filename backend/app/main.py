@@ -6,19 +6,12 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 
 from backend.app.config import settings
-from backend.app.database import engine, Base
 from backend.app.routers import (
     news_router,
     digest_router,
     chat_router,
     intelligence_router,
 )
-
-# Import all models so they register with Base before create_all
-import backend.app.models  # noqa: F401
-
-# Create all database tables on startup (idempotent — safe to run on every restart)
-Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI App
 app = FastAPI(

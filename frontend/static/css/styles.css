@@ -906,6 +906,19 @@ html, body {
   border-bottom-left-radius: 2px;
 }
 
+.syn-chat-bubble.typing-indicator {
+  color: var(--syn-cyan);
+  letter-spacing: 4px;
+  font-size: 18px;
+  padding: 8px 16px;
+  animation: syn-typing-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes syn-typing-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
 .syn-chat-input-row {
   padding: 12px 16px;
   border-top: 1px solid var(--syn-border-dim);

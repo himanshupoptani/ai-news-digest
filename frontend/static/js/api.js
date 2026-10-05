@@ -46,6 +46,18 @@ const Api = {
   sendChatMessage(message, session_id = null) {
     return this.post("/api/chat/message", { message, session_id });
   },
+  sendChatMessageWithSignal(message, session_id = null, signal = null) {
+    const body = JSON.stringify({ message, session_id });
+    return fetch(`${BASE_URL}/api/chat/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      signal,
+    }).then(async (res) => {
+      if (!res.ok) throw new Error(`API Error [${res.status}]: ${await res.text()}`);
+      return res.json();
+    });
+  },
   getChatSessions() {
     return this.get("/api/chat/sessions");
   },
