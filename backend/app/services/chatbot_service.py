@@ -163,16 +163,16 @@ RESPOND NOW:"""
         if not settings.GEMINI_API_KEY:
             return None
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={settings.GEMINI_API_KEY}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={settings.GEMINI_API_KEY}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.4,
-                    "maxOutputTokens": 800,
+                    "temperature": 0.7,
+                    "maxOutputTokens": 1024,
                     "topP": 0.9
                 }
             }
-            resp = requests.post(url, json=payload, timeout=12)
+            resp = requests.post(url, json=payload, timeout=30)
             if resp.status_code != 200:
                 logger.warning(f"Gemini chat API returned {resp.status_code}")
                 return None
