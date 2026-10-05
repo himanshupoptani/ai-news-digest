@@ -1119,3 +1119,40 @@ html, body {
   .syn-card-body { padding: 12px; }
   .syn-ticker-items { font-size: 10.5px; }
 }
+
+/* Follow-up question chips */
+.syn-followup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 4px 10px 4px;
+  align-self: flex-start;
+  max-width: 90%;
+}
+
+.syn-followup-label {
+  width: 100%;
+  font-size: 11px;
+  color: var(--syn-text-dim);
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.syn-followup-btn {
+  background: transparent;
+  border: 1px solid var(--syn-cyan);
+  color: var(--syn-cyan);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.syn-followup-btn:hover {
+  background: var(--syn-cyan);
+  color: #0a0f1e;
+  transform: translateY(-1px);
+}

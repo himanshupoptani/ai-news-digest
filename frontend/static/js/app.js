@@ -492,6 +492,9 @@ const Synapse = {
     textarea.disabled = true;
     if (sendBtn) sendBtn.disabled = true;
 
+    // Remove any old follow-up chips
+    document.querySelectorAll('.syn-followup-chips').forEach(el => el.remove());
+
     this.appendChatMsg('user', msg);
 
     // Show typing indicator
@@ -509,6 +512,11 @@ const Synapse = {
       this.removeMsg(typingId);
       this.state.sessionId = res.session_id;
       this.appendChatMsg('assistant', res.content);
+
+      // Show follow-up question chips if available
+      if (res.follow_up_questions && res.follow_up_questions.length > 0) {
+        this.appendFollowUpChips(res.follow_up_questions);
+      }
     } catch (e) {
       this.removeMsg(typingId);
       const isTimeout = e.name === 'AbortError';
@@ -522,6 +530,27 @@ const Synapse = {
       textarea.focus();
     }
   },
+
+  appendFollowUpChips(questions) {
+    const box = document.getElementById('chat-messages-log');
+    if (!box || !questions.length) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'syn-followup-chips';
+    wrapper.innerHTML = `
+      <div class="syn-followup-label">💡 Ask more:</div>
+      ${questions.map(q => `
+        <button class="syn-followup-btn" onclick="
+          document.querySelectorAll('.syn-followup-chips').forEach(el => el.remove());
+          document.getElementById('chat-textarea').value = ${JSON.stringify(q)};
+          Synapse.sendChatMessage();
+        ">${this.escapeHtml(q)}</button>
+      `).join('')}
+    `;
+    box.appendChild(wrapper);
+    box.scrollTop = box.scrollHeight;
+  },
+
 
   appendChatMsg(role, text) {
     const box = document.getElementById('chat-messages-log');
