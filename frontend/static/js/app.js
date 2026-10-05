@@ -240,19 +240,10 @@ const Synapse = {
     if (time) time.textContent = this.formatTimeAgo(art.published_at);
     if (tag) tag.textContent = (art.category || 'WORLD').toUpperCase();
     if (img) {
-      const cat = (art.category || 'world').toLowerCase();
-      const catKeywords = {
-        'technology': 'technology,innovation', 'ai': 'artificial-intelligence',
-        'business': 'business,finance', 'politics': 'government,politics',
-        'science': 'science,space', 'sports': 'sports,stadium',
-        'health': 'health,medicine', 'world': 'world,city',
-        'india': 'india,culture', 'entertainment': 'cinema,entertainment'
-      };
-      const kw = catKeywords[cat] || 'news,world';
-      const seed = art.title ? art.title.charCodeAt(0) : 0;
-      const fallbackSrc = `https://source.unsplash.com/1200x500/?${kw}&sig=${seed}`;
-      img.src = art.image_url || fallbackSrc;
-      img.onerror = () => { img.onerror = null; img.src = fallbackSrc; };
+      const titleSeed = (art.title || '').split('').reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 99);
+      const picsumFallback = 'https://picsum.photos/seed/' + (Math.abs(titleSeed) % 900 + 10) + '/1200/500';
+      img.src = (art.image_url && art.image_url.startsWith('http')) ? art.image_url : picsumFallback;
+      img.onerror = () => { img.onerror = null; img.src = picsumFallback; };
     }
   },
 
@@ -278,49 +269,20 @@ const Synapse = {
     const grid = document.getElementById('radar-matrix-grid');
     if (!grid) return;
 
-    // Category → relevant Unsplash keywords for meaningful images
-    const categoryImages = {
-      'technology': ['technology,computer', 'artificial-intelligence,tech', 'coding,software', 'circuit,digital', 'innovation,future'],
-      'ai': ['artificial-intelligence', 'machine-learning,tech', 'robot,future', 'neural-network', 'data,technology'],
-      'business': ['business,finance', 'stock-market,trading', 'office,corporate', 'economy,money', 'startup,entrepreneur'],
-      'politics': ['government,politics', 'parliament,democracy', 'election,voting', 'law,justice', 'diplomacy,world'],
-      'science': ['science,research', 'laboratory,experiment', 'space,astronomy', 'biology,nature', 'physics,quantum'],
-      'sports': ['sports,athlete', 'cricket,stadium', 'football,soccer', 'basketball,court', 'competition,winner'],
-      'health': ['health,medicine', 'hospital,doctor', 'fitness,wellness', 'pharmacy,drug', 'mental-health'],
-      'world': ['world,globe', 'international,news', 'city,urban', 'travel,culture', 'geography,map'],
-      'india': ['india,culture', 'delhi,city', 'mumbai,urban', 'india,technology', 'indian,politics'],
-      'entertainment': ['entertainment,cinema', 'music,concert', 'film,movie', 'celebrity,art', 'theatre,performance'],
-    };
-
-    const getImageUrl = (article, idx) => {
-      // Use article's own image if available
-      if (article.image_url && article.image_url.startsWith('http')) {
-        return article.image_url;
-      }
-      // Pick category keywords (fallback to generic news)
-      const cat = (article.category || '').toLowerCase();
-      let keywords = null;
-      for (const [key, imgs] of Object.entries(categoryImages)) {
-        if (cat.includes(key)) { keywords = imgs[idx % imgs.length]; break; }
-      }
-      if (!keywords) {
-        // Use title words for uniqueness
-        const titleWords = (article.title || '').toLowerCase()
-          .replace(/[^a-z\s]/g, '').split(' ')
-          .filter(w => w.length > 4).slice(0, 2).join(',') || 'news,world';
-        keywords = titleWords;
-      }
-      // Unsplash Source — free, no API key, unique per keyword+seed
-      const seed = idx + (article.title ? article.title.charCodeAt(0) : 0);
-      return `https://source.unsplash.com/700x400/?${keywords}&sig=${seed}`;
+    // picsum.photos - free, reliable, unique seed-based images per card
+    const getPicsumUrl = (article, idx) => {
+      if (article.image_url && article.image_url.startsWith('http')) return article.image_url;
+      const s = (article.title || '').split('').reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), idx * 37);
+      return 'https://picsum.photos/seed/' + (Math.abs(s) % 900 + 10) + '/700/400';
     };
 
     grid.innerHTML = articles.map((a, idx) => {
-      const img = getImageUrl(a, idx);
+      const img = getPicsumUrl(a, idx);
+      const fbImg = 'https://picsum.photos/seed/' + (idx + 42) + '/700/400';
       return `
         <div class="syn-news-card" onclick="Synapse.openModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
           <div class="syn-thumb-frame">
-            <img src="${img}" alt="news" loading="lazy" onerror="this.onerror=null;this.src='https://source.unsplash.com/700x400/?news,world&sig=${idx}'" />
+            <img src="${img}" alt="news" loading="lazy" onerror="this.onerror=null;this.src='${fbImg}'" />
           </div>
           <div class="syn-card-body">
             <div>
