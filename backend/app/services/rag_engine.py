@@ -1,4 +1,4 @@
-﻿import re
+import re
 import logging
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
@@ -173,7 +173,7 @@ class RAGEngine:
             "generationConfig": {"temperature": 0.2, "maxOutputTokens": 600}
         }
         
-        resp = requests.post(url, json=payload, timeout=8)
+        resp = requests.post(url, json=payload, timeout=30)
         if resp.status_code != 200:
             raise RuntimeError(f"Gemini API error: {resp.status_code}")
 
