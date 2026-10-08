@@ -58,16 +58,23 @@ class TimelineService:
 
         entries: List[TimelineEntry] = []
         for idx, (dt, art) in enumerate(article_tuples):
-            # Extract first clean sentence as milestone summary
-            sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", art.content) if len(s.strip()) > 20]
-            summary = sentences[0] if sentences else art.content[:140]
+            # Strip HTML tags and entities from content before extracting summary
+            raw_content = art.content or ''
+            clean_content = re.sub(r'<[^>]+>', ' ', raw_content)          # remove tags
+            clean_content = re.sub(r'&[a-zA-Z]+;', ' ', clean_content)   # remove &nbsp; etc.
+            clean_content = re.sub(r'\s+', ' ', clean_content).strip()    # collapse whitespace
+            sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', clean_content) if len(s.strip()) > 20]
+            summary = sentences[0] if sentences else clean_content[:140]
 
             display_time = dt.strftime("%b %d, %Y - %H:%M UTC")
+
+            clean_title = re.sub(r'<[^>]+>', ' ', art.title or '')
+            clean_title = re.sub(r'&[a-zA-Z]+;', ' ', clean_title).strip()
 
             entries.append(
                 TimelineEntry(
                     id=f"milestone_{idx + 1}",
-                    headline=art.title,
+                    headline=clean_title,
                     summary=summary,
                     source_name=art.source_name,
                     url=art.url,
