@@ -18,22 +18,35 @@ const Synapse = {
 
   init() {
     this.bindEvents();
+    this.initHistoryRouting();
     this.updateSavedBadge();
     this.loadRadar();
     this.initChatWelcome();
   },
 
   bindEvents() {
-    // Escape key closes modal dialog
+    // Escape key closes modal dialog and mobile navigation
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') Synapse.closeModal();
+      if (e.key === 'Escape') {
+        Synapse.closeModal();
+        Synapse.closeMobileNav();
+      }
     });
+
+    // Backdrop click on article modal closes it
+    const modal = document.getElementById('syn-article-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) Synapse.closeModal();
+      });
+    }
 
     // Top Omnibar input
     const omni = document.getElementById('global-omnibar');
     if (omni) {
       omni.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
+          e.target.blur();
           const val = omni.value.trim();
           if (val) Synapse.search(val);
         }
@@ -44,7 +57,10 @@ const Synapse = {
     const searchInput = document.getElementById('search-view-input');
     if (searchInput) {
       searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Synapse.execSearch();
+        if (e.key === 'Enter') {
+          e.target.blur();
+          Synapse.execSearch();
+        }
       });
     }
 
@@ -52,7 +68,10 @@ const Synapse = {
     const dossierInput = document.getElementById('dossier-topic-input');
     if (dossierInput) {
       dossierInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Synapse.execDossier();
+        if (e.key === 'Enter') {
+          e.target.blur();
+          Synapse.execDossier();
+        }
       });
     }
 
@@ -62,6 +81,7 @@ const Synapse = {
       chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
+          e.target.blur();
           Synapse.sendChatMessage();
         }
       });
@@ -71,7 +91,10 @@ const Synapse = {
     const graphTopic = document.getElementById('graph-topic-input');
     if (graphTopic) {
       graphTopic.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Synapse.renderGraph();
+        if (e.key === 'Enter') {
+          e.target.blur();
+          Synapse.renderGraph();
+        }
       });
     }
 
@@ -79,15 +102,56 @@ const Synapse = {
     const timelineTopic = document.getElementById('timeline-query-input');
     if (timelineTopic) {
       timelineTopic.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') Synapse.renderTimeline();
+        if (e.key === 'Enter') {
+          e.target.blur();
+          Synapse.renderTimeline();
+        }
       });
     }
   },
 
   // ══════════════════════════════════════════════════════
+  // HISTORY & ROUTING CONTROLLER
+  // ══════════════════════════════════════════════════════
+  initHistoryRouting() {
+    const rawHash = (window.location.hash || '').replace('#', '');
+    const validViews = ['radar', 'search', 'dossier', 'chat', 'graph', 'timeline', 'saved'];
+    const startView = validViews.includes(rawHash) ? rawHash : 'radar';
+
+    history.replaceState({ view: startView, modalOpen: false }, '', '#' + startView);
+    if (startView !== 'radar') {
+      this.nav(startView, false);
+    }
+
+    // Intercept hardware Back button & browser navigation
+    window.addEventListener('popstate', (e) => {
+      // 1. If article modal is open, back button MUST close it without leaving site
+      const modal = document.getElementById('syn-article-modal');
+      if (modal && !modal.classList.contains('hidden')) {
+        Synapse.closeModal(false);
+        return;
+      }
+
+      // 2. If mobile drawer is open, back button closes drawer
+      const sidebar = document.querySelector('.syn-sidebar');
+      if (sidebar && sidebar.classList.contains('mobile-open')) {
+        Synapse.closeMobileNav();
+        return;
+      }
+
+      // 3. Otherwise navigate to view in history state or hash
+      const targetView = (e.state && e.state.view) || (window.location.hash ? window.location.hash.replace('#', '') : 'radar');
+      Synapse.nav(targetView, false);
+    });
+  },
+
+  // ══════════════════════════════════════════════════════
   // NAVIGATION CONTROLLER
   // ══════════════════════════════════════════════════════
-  nav(viewId) {
+  nav(viewId, pushHistory = true) {
+    if (pushHistory && this.state.activeView !== viewId) {
+      history.pushState({ view: viewId, modalOpen: false }, '', '#' + viewId);
+    }
     this.state.activeView = viewId;
 
     // Toggle canvas view panels
@@ -118,6 +182,7 @@ const Synapse = {
     }
     // Auto-close mobile sidebar on nav
     if (window.innerWidth <= 900) this.closeMobileNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
   toggleMobileNav() {
@@ -492,6 +557,10 @@ const Synapse = {
     textarea.value = '';
     textarea.disabled = true;
     if (sendBtn) sendBtn.disabled = true;
+    textarea.blur();
+
+    // Remove any old follow-up chips
+    document.querySelectorAll('.syn-followup-chips').forEach(el => el.remove());
 
     this.appendChatMsg('user', msg);
 
@@ -510,6 +579,11 @@ const Synapse = {
       this.removeMsg(typingId);
       this.state.sessionId = res.session_id;
       this.appendChatMsg('assistant', res.content);
+
+      // Show follow-up question chips if available
+      if (res.follow_up_questions && res.follow_up_questions.length > 0) {
+        this.appendFollowUpChips(res.follow_up_questions);
+      }
     } catch (e) {
       this.removeMsg(typingId);
       const isTimeout = e.name === 'AbortError';
@@ -520,8 +594,30 @@ const Synapse = {
     } finally {
       textarea.disabled = false;
       if (sendBtn) sendBtn.disabled = false;
-      textarea.focus();
+      if (window.innerWidth > 768) {
+        textarea.focus();
+      }
     }
+  },
+
+  appendFollowUpChips(questions) {
+    const box = document.getElementById('chat-messages-log');
+    if (!box || !questions.length) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'syn-followup-chips';
+    wrapper.innerHTML = `
+      <div class="syn-followup-label">💡 Ask more:</div>
+      ${questions.map(q => `
+        <button class="syn-followup-btn" onclick="
+          document.querySelectorAll('.syn-followup-chips').forEach(el => el.remove());
+          document.getElementById('chat-textarea').value = ${JSON.stringify(q)};
+          Synapse.sendChatMessage();
+        ">${this.escapeHtml(q)}</button>
+      `).join('')}
+    `;
+    box.appendChild(wrapper);
+    box.scrollTop = box.scrollHeight;
   },
 
   appendChatMsg(role, text) {
@@ -684,6 +780,9 @@ const Synapse = {
     const modal = document.getElementById('syn-article-modal');
     if (!modal) return;
 
+    // Push history state so hardware Back button & browser Back close modal instead of exiting site!
+    history.pushState({ view: this.state.activeView, modalOpen: true }, '', '#article');
+
     const cat = document.getElementById('modal-tag-badge');
     const src = document.getElementById('modal-source-label');
     const title = document.getElementById('modal-title-text');
@@ -711,12 +810,19 @@ const Synapse = {
     this.updateModalSaveText();
     this.stopAudio();
     modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
   },
 
-  closeModal() {
+  closeModal(triggerBack = true) {
     this.stopAudio();
     const modal = document.getElementById('syn-article-modal');
     if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+
+    // If closed by on-screen button, pop the modal history state cleanly
+    if (triggerBack && window.history.state && window.history.state.modalOpen) {
+      window.history.back();
+    }
   },
 
   dossierFromModal() {
