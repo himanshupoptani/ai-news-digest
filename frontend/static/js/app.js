@@ -300,8 +300,7 @@ const Synapse = {
     const img = document.getElementById('spotlight-img');
 
     if (title) title.textContent = art.title;
-    const cleanDesc = this.stripHtml(art.content || '').replace(/\n/g, ' ');
-    if (desc) desc.textContent = cleanDesc ? cleanDesc.slice(0, 180) + '...' : '';
+    if (desc) desc.textContent = this.getCleanSnippet(art, 180);
     if (source) source.textContent = art.source_name || 'Verified Wire';
     if (time) time.textContent = this.formatTimeAgo(art.published_at);
     if (tag) tag.textContent = (art.category || 'WORLD').toUpperCase();
@@ -355,7 +354,7 @@ const Synapse = {
               <span class="syn-tag syn-tag-cyan">${this.escapeHtml(a.category || 'INTEL')}</span>
             </div>
             <h3 class="syn-card-title">${this.escapeHtml(a.title)}</h3>
-            <p class="syn-card-snippet">${this.escapeHtml(this.stripHtml(a.content || '').replace(/\n/g, ' ').slice(0, 115))}...</p>
+            <p class="syn-card-snippet">${this.escapeHtml(this.getCleanSnippet(a, 115))}</p>
             <div class="syn-card-foot">
               <span style="font-weight: 600; color: var(--syn-text-head);">${this.escapeHtml(a.source_name || 'Newswire')}</span>
               <span>${this.formatTimeAgo(a.published_at)}</span>
@@ -433,7 +432,7 @@ const Synapse = {
                   <span class="syn-tag syn-tag-cyan">${this.escapeHtml(a.category || 'SEARCH')}</span>
                 </div>
                 <h3 class="syn-card-title">${this.escapeHtml(a.title)}</h3>
-                <p class="syn-card-snippet">${this.escapeHtml(this.stripHtml(a.content || '').replace(/\n/g, ' ').slice(0, 140))}...</p>
+                <p class="syn-card-snippet">${this.escapeHtml(this.getCleanSnippet(a, 140))}</p>
                 <div class="syn-card-foot">
                   <span style="font-weight: 600; color: var(--syn-text-head);">${this.escapeHtml(a.source_name || 'Newswire')}</span>
                   <span>${this.formatTimeAgo(a.published_at)}</span>
@@ -797,12 +796,20 @@ const Synapse = {
     if (author) author.textContent = article.author ? `By ${article.author}` : 'Wire Service';
     if (time) time.textContent = this.formatTimeAgo(article.published_at);
     if (body) {
-      const clean = this.stripHtml(article.content || '');
+      let clean = this.stripHtml(article.content || '').trim();
+      const normTitle = (article.title || '').toLowerCase().replace(/[^\w\s]/g, '').trim();
+      const normClean = clean.toLowerCase().replace(/[^\w\s]/g, '').trim();
+
+      // If content is just the headline repeated (or headline + publication name)
+      if (normClean === normTitle || (normTitle && normClean.startsWith(normTitle) && normClean.length <= normTitle.length + 30)) {
+        clean = '';
+      }
+
       if (clean) {
         const paragraphs = clean.split('\n').filter(p => p.trim());
         body.innerHTML = paragraphs.map(p => `<p style="margin-bottom: 10px;">${this.escapeHtml(p)}</p>`).join('');
       } else {
-        body.innerHTML = '<p style="color: var(--syn-text-dim);">Full dispatch content verified at publisher source. Click "Publisher Link" below to read more.</p>';
+        body.innerHTML = '<p style="color: var(--syn-text-dim); line-height: 1.6;">Full dispatch content is available directly at the original publisher source. Click <strong>"Publisher Link ↗"</strong> below to read the comprehensive reporting.</p>';
       }
     }
     if (link) link.href = article.url || '#';
@@ -849,8 +856,15 @@ const Synapse = {
   startAudio() {
     if (!('speechSynthesis' in window) || !this.state.currentModalArticle) return;
     window.speechSynthesis.cancel();
-    const cleanContent = this.stripHtml(this.state.currentModalArticle.content || '').replace(/\n/g, ' ');
-    const txt = `${this.state.currentModalArticle.title}. ${cleanContent}`;
+    let cleanContent = this.stripHtml(this.state.currentModalArticle.content || '').replace(/\n/g, ' ').trim();
+    const normTitle = (this.state.currentModalArticle.title || '').toLowerCase().replace(/[^\w\s]/g, '').trim();
+    const normClean = cleanContent.toLowerCase().replace(/[^\w\s]/g, '').trim();
+    if (normClean === normTitle || (normTitle && normClean.startsWith(normTitle) && normClean.length <= normTitle.length + 30)) {
+      cleanContent = '';
+    }
+    const txt = cleanContent
+      ? `${this.state.currentModalArticle.title}. ${cleanContent}`
+      : `${this.state.currentModalArticle.title}. From ${this.state.currentModalArticle.source_name || 'verified wire'}. Full story available at the publisher source link.`;
     this.state.speechUtterance = new SpeechSynthesisUtterance(txt);
     this.state.speechUtterance.onend = () => this.stopAudio();
     window.speechSynthesis.speak(this.state.speechUtterance);
@@ -915,7 +929,7 @@ const Synapse = {
         <div class="syn-card-body">
           <div><span class="syn-tag syn-tag-rose">SAVED</span></div>
           <h3 class="syn-card-title">${this.escapeHtml(a.title)}</h3>
-          <p class="syn-card-snippet">${this.escapeHtml(this.stripHtml(a.content || '').replace(/\n/g, ' ').slice(0, 110))}...</p>
+          <p class="syn-card-snippet">${this.escapeHtml(this.getCleanSnippet(a, 110))}</p>
           <div class="syn-card-foot">
             <span>${this.escapeHtml(a.source_name || 'Newswire')}</span>
             <button class="syn-chip" style="color: var(--syn-rose); padding: 2px 6px;" onclick="event.stopPropagation(); Synapse.removeSavedItem(${idx})">Remove</button>
@@ -958,6 +972,18 @@ const Synapse = {
       .map(line => line.replace(/\s+/g, ' ').trim())
       .filter(line => line.length > 0)
       .join('\n');
+  },
+
+  getCleanSnippet(article, maxLen = 140) {
+    if (!article) return '';
+    let clean = this.stripHtml(article.content || '').replace(/\n/g, ' ').trim();
+    const normTitle = (article.title || '').toLowerCase().replace(/[^\w\s]/g, '').trim();
+    const normClean = clean.toLowerCase().replace(/[^\w\s]/g, '').trim();
+
+    if (!clean || normClean === normTitle || (normTitle && normClean.startsWith(normTitle) && normClean.length <= normTitle.length + 30)) {
+      return `Verified dispatch reported by ${article.source_name || 'wire service'}. Full reporting available at publisher link.`;
+    }
+    return clean.slice(0, maxLen) + (clean.length > maxLen ? '...' : '');
   },
 
   escapeHtml(str) {

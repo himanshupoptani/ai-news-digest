@@ -16,8 +16,11 @@ from backend.app.schemas.news import RawArticle, NewsSearchResponse, EventCluste
 logger = logging.getLogger(__name__)
 
 
-def _clean_html_content(raw_text: str) -> str:
-    """Strips HTML tags, converts line breaks, and unescapes HTML entities."""
+def _clean_html_content(raw_text: str, title: str = "") -> str:
+    """
+    Strips HTML tags, converts line breaks, unescapes HTML entities,
+    and returns empty string if summary only repeats the headline/source.
+    """
     if not raw_text:
         return ""
     text = re.sub(r"</li>", "\n", raw_text, flags=re.IGNORECASE)
@@ -27,7 +30,16 @@ def _clean_html_content(raw_text: str) -> str:
     clean = html.unescape(clean)
     lines = [re.sub(r"\s+", " ", line).strip() for line in clean.split("\n")]
     lines = [line for line in lines if line]
-    return "\n".join(lines)
+    clean_str = "\n".join(lines).strip()
+
+    if title and clean_str:
+        # Check if content is essentially just the title (with or without source name)
+        t_norm = re.sub(r"[^\w\s]", "", title.lower()).strip()
+        c_norm = re.sub(r"[^\w\s]", "", clean_str.lower()).strip()
+        if c_norm == t_norm or (t_norm and c_norm.startswith(t_norm) and len(c_norm) <= len(t_norm) + 30):
+            return ""
+
+    return clean_str
 
 
 def _parse_date(date_str) -> Optional[datetime]:
@@ -351,7 +363,7 @@ class NewsFetcher:
                     source_name=source_name,
                     author="Wire",
                     published_at=pub_iso,
-                    content=_clean_html_content(summary),
+                    content=_clean_html_content(summary, title=title),
                     category=category,
                     image_url=None
                 ))
@@ -446,7 +458,7 @@ class NewsFetcher:
                             source_name=feed["name"],
                             author=entry.get("author", feed["name"]),
                             published_at=pub_iso,
-                            content=_clean_html_content(summary),
+                            content=_clean_html_content(summary, title=title),
                             category=feed["category"]
                         ))
                         if len(feed_results) >= per_feed_limit:

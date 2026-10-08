@@ -11,6 +11,8 @@ The master search pipeline that coordinates:
 """
 
 from __future__ import annotations
+import re
+import html
 import logging
 import urllib.parse
 import feedparser
@@ -28,6 +30,31 @@ from backend.app.services.event_clustering import event_clusterer, NewsEvent
 from backend.app.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def _clean_html_content(raw_text: str, title: str = "") -> str:
+    """
+    Strips HTML tags, converts line breaks, unescapes HTML entities,
+    and returns empty string if summary only repeats the headline/source.
+    """
+    if not raw_text:
+        return ""
+    text = re.sub(r"</li>", "\n", raw_text, flags=re.IGNORECASE)
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"</p>", "\n\n", text, flags=re.IGNORECASE)
+    clean = re.sub(r"<[^>]+>", " ", text)
+    clean = html.unescape(clean)
+    lines = [re.sub(r"\s+", " ", line).strip() for line in clean.split("\n")]
+    lines = [line for line in lines if line]
+    clean_str = "\n".join(lines).strip()
+
+    if title and clean_str:
+        t_norm = re.sub(r"[^\w\s]", "", title.lower()).strip()
+        c_norm = re.sub(r"[^\w\s]", "", clean_str.lower()).strip()
+        if c_norm == t_norm or (t_norm and c_norm.startswith(t_norm) and len(c_norm) <= len(t_norm) + 30):
+            return ""
+
+    return clean_str
 
 
 def _parse_date(date_str) -> Optional[datetime]:
@@ -258,7 +285,7 @@ class GlobalNewsEngine:
                 source_name=source_name,
                 author="Wire",
                 published_at=pub_iso,
-                content=summary,
+                content=_clean_html_content(summary, title=title),
                 category="General",
                 image_url=None,
             ))
@@ -303,7 +330,7 @@ class GlobalNewsEngine:
                 source_name=item.get("domain", "GDELT Source"),
                 author=item.get("author", "Wire"),
                 published_at=pub_iso,
-                content=item.get("seendate", "") + " " + title,
+                content="",
                 category=item.get("language", "General"),
                 image_url=None,
             ))
@@ -332,13 +359,14 @@ class GlobalNewsEngine:
         for item in resp.json().get("articles", []):
             if not item.get("title") or item.get("title") == "[Removed]":
                 continue
+            item_title = item["title"]
             articles.append(RawArticle(
-                title=item["title"],
+                title=item_title,
                 url=item.get("url", ""),
                 source_name=item.get("source", {}).get("name", "NewsAPI"),
                 author=item.get("author") or "Staff",
                 published_at=item.get("publishedAt", datetime.now(timezone.utc).isoformat()),
-                content=item.get("description") or item.get("content") or "",
+                content=_clean_html_content(item.get("description") or item.get("content") or "", title=item_title),
                 image_url=item.get("urlToImage"),
                 category="General",
             ))
@@ -367,7 +395,7 @@ class GlobalNewsEngine:
                             source_name=feed["name"],
                             author=entry.get("author", feed["name"]),
                             published_at=dt.isoformat() if dt else datetime.now(timezone.utc).isoformat(),
-                            content=summary,
+                            content=_clean_html_content(summary, title=title),
                             category=feed.get("category", "General"),
                         ))
                         if len(results) >= limit:
